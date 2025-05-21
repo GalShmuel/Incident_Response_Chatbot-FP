@@ -1,0 +1,148 @@
+.filters-container {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filters-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filters-header h2 {
+  font-size: 1.1rem;
+  color: #1f2937;
+  margin: 0;
+  font-weight: 600;
+}
+
+.total-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.clear-filters {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  color: #6b7280;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filters:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.clear-filters:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.severity-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.severity-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  color: #4b5563;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  justify-content: space-between;
+}
+
+.severity-filter:not(:disabled):hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.severity-filter.active {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.severity-filter.empty {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.severity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filter-label {
+  flex: 1;
+  text-align: left;
+  margin: 0 4px;
+}
+
+.count-badge {
+  background-color: #e5e7eb;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #4b5563;
+  min-width: 24px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.severity-filter.active .count-badge {
+  background-color: #d1d5db;
+  color: #1f2937;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filters-container {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .severity-filters {
+    gap: 6px;
+  }
+
+  .severity-filter {
+    padding: 4px 10px;
+    font-size: 0.8125rem;
+    min-width: 120px;
+  }
+
+  .count-badge {
+    padding: 1px 4px;
+    font-size: 0.7rem;
+    min-width: 20px;
+  }
+} 

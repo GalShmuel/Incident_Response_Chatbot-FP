@@ -1,0 +1,25 @@
+.dashboard-header {
+    display: flex;
+    flex-direction: row;
+    align-items: left;
+    justify-content: left;  
+    background-color: rgba(202, 218, 221, 0.303);
+ 
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+.dashboard-icon {
+    font-size: 50px;
+    color: #000;
+    justify-content: left;
+    margin-left: 10px;
+    margin-top: 17px;
+}
+
+.dashboard-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+   
+}

@@ -1,20 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import './ChatBot.css';
-import { VscRobot } from "react-icons/vsc";
-import { FaTimes } from 'react-icons/fa';
-import ChatView from '../ChatView/ChatView';
-
-const ChatBot = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [dimensions, setDimensions] = useState({ width: 640, height: 800 });
+import React, { useRef, useEffect } from 'react';import './ChatBot.css';import { VscRobot } from "react-icons/vsc";import { FaTimes } from 'react-icons/fa';import ChatView from '../ChatView/ChatView';import { useChat } from '../../../context/ChatContext';const ChatBot = () => {  const { isChatOpen, toggleChat } = useChat();  const [dimensions, setDimensions] = React.useState({ width: 640, height: 800 });
   const chatWindowRef = useRef(null);
   const isResizing = useRef(false);
   const resizeType = useRef(null); // 'left' or 'top'
   const startPos = useRef({ x: 0, width: 0 });
 
-  const toggleChat = () => setIsOpen(!isOpen);
-
-  useEffect(() => {
+    useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isResizing.current || !chatWindowRef.current) return;
 
@@ -59,9 +49,7 @@ const ChatBot = () => {
     resizeType.current = type;
   };
 
-  return (
-    <div className={`chatbot-container ${isOpen ? 'open' : ''}`}>
-      {isOpen ? (
+    return (    <div className={`chatbot-container ${isChatOpen ? 'open' : ''}`}>      {isChatOpen ? (
         <div
           className="chat-window"
           ref={chatWindowRef}

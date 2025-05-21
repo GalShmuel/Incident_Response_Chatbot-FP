@@ -2,7 +2,7 @@ import React from 'react';
 import './AlertCard.css';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { WiTime3 } from "react-icons/wi";
-
+import { useChat } from '../../context/ChatContext';
 
 const getSeverityColor = (severity) => {
     switch (severity) {
@@ -32,6 +32,7 @@ const formatDate = (dateString) => {
 };
 
 const AlertCard = ({ finding }) => {
+  const { addAlertToChat } = useChat();
   const {
     Title,
     Description,
@@ -41,27 +42,35 @@ const AlertCard = ({ finding }) => {
     Id
   } = finding;
 
+  const handleClick = () => {
+    addAlertToChat(finding);
+  };
+
   return (
-    <div className="alert-card" 
-        style=
-            {{  border: `2px solid ${getSeverityColor(Severity)}`,
-            backgroundColor: hexToRGBA(getSeverityColor(Severity), 0.15),
-            position: 'relative'}}>
-        <div className="severity-badge"
-         style= {{  border: `2px solid ${getSeverityColor(Severity)}`}}>
-            Severity: {Severity}
-        </div>
+    <div 
+      className="alert-card" 
+      onClick={handleClick}
+      style={{
+        border: `2px solid ${getSeverityColor(Severity)}`,
+        backgroundColor: hexToRGBA(getSeverityColor(Severity), 0.15),
+        position: 'relative',
+        cursor: 'pointer'
+      }}
+    >
+      <div 
+        className="severity-badge"
+        style={{ border: `2px solid ${getSeverityColor(Severity)}` }}
+      >
+        Severity: {Severity}
+      </div>
       <div className="alert-card-header">
-        <h3>{Title}
-        </h3>
+        <h3>{Title}</h3>
         <div className="created-at">
           Created: {formatDate(CreatedAt)}
         </div>
-       
-        </div>
+      </div>
       <div className="alert-content">
         <p className="description">{Description}</p>
-   
         <div className="alert-details">
           <p><strong>Type:</strong> {Type}</p>
           <p><strong>ID:</strong> {Id}</p>

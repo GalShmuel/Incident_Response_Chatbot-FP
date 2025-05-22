@@ -54,21 +54,25 @@
 
 .message-text {
     background-color: #f3f4f6;
-    padding: 9px 5px;
+    padding: 9px 12px;
+    padding-bottom: 25px;  /* Space for timestamp */
     border-radius: 12px;
     max-width: 80%;
     line-height: 1.5;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     margin-top: 0;
-    display: flex;
     gap: 4px;
-    align-items: flex-end;
+    position: relative;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 .message.user .message-text {
     background-color: #66c0c5;
     color: rgb(255, 255, 255);
     flex-direction: row-reverse;
+    padding-bottom: 25px;  /* Keep same spacing as bot messages */
 }
 
 .ChatInputArea {
@@ -132,6 +136,8 @@ pre {
     overflow-x: auto;
     margin: 0.5rem 0;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 pre::-webkit-scrollbar {
@@ -152,6 +158,17 @@ pre::-webkit-scrollbar-thumb {
 
 pre::-webkit-scrollbar-thumb:hover {
     background: #3d8a8e;
+}
+
+pre code {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #e5e7eb;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    display: block;
+    width: 100%;
 }
 
 .code-block-header {
@@ -176,19 +193,27 @@ pre::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
-code {
-    font-family: 'Fira Code', monospace;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #e5e7eb;
+/* JSON formatting with responsive styles */
+.json-key { 
+    color: #9cdcfe; 
+    word-break: break-word;
 }
-
-/* JSON formatting */
-.json-key { color: #9cdcfe; }
-.json-string { color: #ce9178; }
-.json-number { color: #b5cea8; }
-.json-boolean { color: #569cd6; }
-.json-null { color: #569cd6; }
+.json-string { 
+    color: #ce9178; 
+    word-break: break-word;
+}
+.json-number { 
+    color: #b5cea8; 
+    word-break: break-word;
+}
+.json-boolean { 
+    color: #569cd6; 
+    word-break: break-word;
+}
+.json-null { 
+    color: #569cd6; 
+    word-break: break-word;
+}
 
 /* Markdown styling */
 .markdown-header {
@@ -208,11 +233,31 @@ li {
 .message-timestamp {
     font-size: 0.75rem;
     color: #6b7280;
-    margin-left: 8px;
-    display: inline-block;
-    vertical-align: bottom;
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
 }
 
 .message.user .message-timestamp {
     color: rgba(255, 255, 255, 0.8);
+    position: absolute;
+    bottom: 6px;
+    left: 8px;
+    right: auto;
+}
+
+.message pre {
+    max-width: 100%;
+    margin: 8px 0;
+}
+
+.message pre code {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #e5e7eb;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    display: block;
+    width: 100%;
 }

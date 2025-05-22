@@ -20,15 +20,15 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Routes
 
-// Create a new chat session
-app.post('/api/chats', async (req, res) => {
+// Get recent chats (last 3)
+app.get('/api/chats/recent', async (req, res) => {
     try {
-        const chat = new Chat({
-            messages: req.body.messages || []
-        });
-        await chat.save();
-        res.status(201).json(chat);
+        const recentChats = await Chat.find()
+            .sort({ updatedAt: -1 })
+            .limit(5);
+        res.json(recentChats);
     } catch (error) {
+        console.error('Error fetching recent chats:', error);
         res.status(500).json({ message: error.message });
     }
 });
@@ -41,6 +41,29 @@ app.get('/api/chats/:id', async (req, res) => {
             return res.status(404).json({ message: 'Chat not found' });
         }
         res.json(chat);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get all chat sessions (you might want to add pagination later)
+app.get('/api/chats', async (req, res) => {
+    try {
+        const chats = await Chat.find().sort({ updatedAt: -1 });
+        res.json(chats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Create a new chat session
+app.post('/api/chats', async (req, res) => {
+    try {
+        const chat = new Chat({
+            messages: req.body.messages || []
+        });
+        await chat.save();
+        res.status(201).json(chat);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -59,16 +82,6 @@ app.post('/api/chats/:id/messages', async (req, res) => {
         await chat.save();
         
         res.json(chat);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// Get all chat sessions (you might want to add pagination later)
-app.get('/api/chats', async (req, res) => {
-    try {
-        const chats = await Chat.find().sort({ updatedAt: -1 });
-        res.json(chats);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

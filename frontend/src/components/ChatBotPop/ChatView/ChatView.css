@@ -54,18 +54,21 @@
 
 .message-text {
     background-color: #f3f4f6;
-    padding: 8px 12px;
+    padding: 9px 5px;
     border-radius: 12px;
     max-width: 80%;
     line-height: 1.5;
     font-size: 0.9rem;
-    margin-top: 0; /* Remove any top margin */
+    margin-top: 0;
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
 }
 
 .message.user .message-text {
     background-color: #66c0c5;
     color: rgb(255, 255, 255);
-    
+    flex-direction: row-reverse;
 }
 
 .ChatInputArea {
@@ -200,4 +203,16 @@ ul {
 
 li {
     margin: 0.25rem 0;
+}
+
+.message-timestamp {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-left: 8px;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.message.user .message-timestamp {
+    color: rgba(255, 255, 255, 0.8);
 }

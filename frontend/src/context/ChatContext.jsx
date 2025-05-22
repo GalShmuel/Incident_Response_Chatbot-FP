@@ -2,7 +2,11 @@ import React, { createContext, useState, useContext } from 'react';
 
 const ChatContext = createContext();
 
-const INITIAL_MESSAGE = { role: 'bot', content: "Hello! How can I help you today?" };
+const INITIAL_MESSAGE = { 
+    role: 'bot', 
+    content: "Hello! How can I help you today?",
+    timestamp: new Date()
+};
 
 export const ChatProvider = ({ children }) => {
     const [messages, setMessages] = useState([INITIAL_MESSAGE]);
@@ -10,7 +14,7 @@ export const ChatProvider = ({ children }) => {
     const [lastActivityTime, setLastActivityTime] = useState(Date.now());
 
     const addMessage = (message) => {
-        setMessages(prev => [...prev, message]);
+        setMessages(prev => [...prev, { ...message, timestamp: new Date() }]);
         setLastActivityTime(Date.now());
     };
 
@@ -26,7 +30,7 @@ export const ChatProvider = ({ children }) => {
     };
 
     const resetChat = () => {
-        setMessages([INITIAL_MESSAGE]);
+        setMessages([{ ...INITIAL_MESSAGE, timestamp: new Date() }]);
         setLastActivityTime(Date.now());
     };
 

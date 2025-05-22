@@ -365,7 +365,16 @@ const ChatView = () => {
                                 <RiRobot2Line className="icon" />
                             </div>
                         )}
-                        <div className="message-text">{renderMessageContent(msg.content)}</div>
+                        <div className="message-text">
+                            {renderMessageContent(msg.content)}
+                            <span className="message-timestamp">
+                                {msg.timestamp.toLocaleTimeString('en-US', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit',
+                                    hour12: false 
+                                })}
+                            </span>
+                        </div>
                     </div>
                 ))}
                 <div ref={messagesEndRef} />

@@ -1,28 +1,36 @@
-import React, { useRef, useEffect } from 'react';import './ChatBot.css';import { VscRobot } from "react-icons/vsc";import { FaTimes } from 'react-icons/fa';import ChatView from '../ChatView/ChatView';import { useChat } from '../../../context/ChatContext';const ChatBot = () => {  const { isChatOpen, toggleChat } = useChat();  const [dimensions, setDimensions] = React.useState({ width: 640, height: 800 });
+import React, { useRef, useEffect, useState } from 'react';
+import './ChatBot.css';
+import { VscRobot } from "react-icons/vsc";
+import { FaTimes } from 'react-icons/fa';
+import ChatView from '../ChatView/ChatView';
+
+const ChatBot = () => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 640, height: 800 });
   const chatWindowRef = useRef(null);
   const isResizing = useRef(false);
-  const resizeType = useRef(null); // 'left' or 'top'
+  const resizeType = useRef(null);
   const startPos = useRef({ x: 0, width: 0 });
 
-    useEffect(() => {
+  const toggleChat = () => setIsChatOpen(prev => !prev);
+
+  useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isResizing.current || !chatWindowRef.current) return;
 
       const rect = chatWindowRef.current.getBoundingClientRect();
 
       if (resizeType.current === 'left') {
-        // Calculate new width based on the distance from the right edge
         const distanceFromRight = window.innerWidth - e.clientX;
         const newWidth = Math.min(
-          Math.max(300, distanceFromRight - 20), // 20px is the right margin
+          Math.max(300, distanceFromRight - 20),
           window.innerWidth * 0.9
         );
         setDimensions(prev => ({ ...prev, width: newWidth }));
       } else if (resizeType.current === 'top') {
-        // Calculate new height based on the distance from the bottom
         const distanceFromBottom = window.innerHeight - e.clientY;
         const newHeight = Math.min(
-          Math.max(400, distanceFromBottom - 20), // 20px is the bottom margin
+          Math.max(400, distanceFromBottom - 20),
           window.innerHeight * 0.9
         );
         setDimensions(prev => ({ ...prev, height: newHeight }));
@@ -49,15 +57,17 @@ import React, { useRef, useEffect } from 'react';import './ChatBot.css';import {
     resizeType.current = type;
   };
 
-    return (    <div className={`chatbot-container ${isChatOpen ? 'open' : ''}`}>      {isChatOpen ? (
+  return (
+    <div className={`chatbot-container ${isChatOpen ? 'open' : ''}`}>
+      {isChatOpen ? (
         <div
           className="chat-window"
           ref={chatWindowRef}
           style={{ 
             width: `${dimensions.width}px`, 
             height: `${dimensions.height}px`,
-            right: '20px',  // Fixed right position
-            bottom: '20px'  // Fixed bottom position
+            right: '20px',
+            bottom: '20px'
           }}
         >
           <div 

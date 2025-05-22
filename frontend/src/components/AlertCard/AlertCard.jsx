@@ -2,7 +2,6 @@ import React from 'react';
 import './AlertCard.css';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { WiTime3 } from "react-icons/wi";
-import { useChat } from '../../context/ChatContext';
 
 const getSeverityColor = (severity) => {
     switch (severity) {
@@ -32,7 +31,6 @@ const formatDate = (dateString) => {
 };
 
 const AlertCard = ({ finding }) => {
-  const { addAlertToChat } = useChat();
   const {
     Title,
     Description,
@@ -42,19 +40,13 @@ const AlertCard = ({ finding }) => {
     Id
   } = finding;
 
-  const handleClick = () => {
-    addAlertToChat(finding);
-  };
-
   return (
     <div 
       className="alert-card" 
-      onClick={handleClick}
       style={{
         border: `2px solid ${getSeverityColor(Severity)}`,
         backgroundColor: hexToRGBA(getSeverityColor(Severity), 0.15),
-        position: 'relative',
-        cursor: 'pointer'
+        position: 'relative'
       }}
     >
       <div 

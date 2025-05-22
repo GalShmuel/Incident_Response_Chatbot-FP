@@ -15,7 +15,7 @@ const ChatView = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isThinking]);
 
   const addMessage = (message) => {
     setMessages(prev => [...prev, message]);
@@ -25,7 +25,8 @@ const ChatView = () => {
     try {
       addMessage({
         role: 'user',
-        content
+        content,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
       setIsThinking(true);
 
@@ -34,7 +35,8 @@ const ChatView = () => {
       setTimeout(() => {
         addMessage({
           role: 'bot',
-          content: 'This is a placeholder response. Backend integration pending.'
+          content: 'This is a placeholder response. Backend integration pending.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
         setIsThinking(false);
       }, 1000);
@@ -43,38 +45,48 @@ const ChatView = () => {
       console.error('Error sending message:', error);
       addMessage({
         role: 'bot',
-        content: 'Sorry, I encountered an error processing your message.'
+        content: 'Sorry, I encountered an error processing your message.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
       setIsThinking(false);
     }
   };
 
   return (
-    <div className="chat-view">
-      <div className="messages">
+    <div className="ChatView">
+      <div className="ChatMessages">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.role}`}>
-            <div className="message-icon">
-              {message.role === 'user' ? <IoPersonOutline /> : <RiRobot2Line />}
+            <div className={`icon-wrapper ${message.role === 'user' ? 'user-icon-wrapper' : 'bot-icon-wrapper'}`}>
+              {message.role === 'user' ? <IoPersonOutline className="icon" /> : <RiRobot2Line className="icon" />}
             </div>
-            <div className="message-content">
+            <div className="message-text">
               {message.content}
+              <div className="message-timestamp">
+                {message.timestamp}
+              </div>
             </div>
           </div>
         ))}
         {isThinking && (
           <div className="message bot">
-            <div className="message-icon">
-              <RiRobot2Line />
+            <div className="icon-wrapper bot-icon-wrapper">
+              <RiRobot2Line className="icon" />
             </div>
-            <div className="message-content thinking">
-              Thinking...
+            <div className="message-text thinking">
+              <div className="thinking-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
-      <ChatInput onSend={handleMessageSend} />
+      <div className="ChatInputArea">
+        <ChatInput onSend={handleMessageSend} isDisabled={isThinking} />
+      </div>
     </div>
   );
 };

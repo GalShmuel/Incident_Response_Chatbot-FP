@@ -4,6 +4,7 @@ import { VscRobot } from "react-icons/vsc";
 import { FaTimes } from 'react-icons/fa';
 import ChatView from '../ChatView/ChatView';
 
+
 const ChatBot = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 640, height: 800 });

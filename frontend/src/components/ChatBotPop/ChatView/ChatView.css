@@ -76,10 +76,8 @@
 }
 
 .ChatInputArea {
-    padding: 0.3rem;
     background-color: #529295f3;
     border-top: 1px solid #e5e7eb;
-    display: flex;
     align-items: center;
     gap: 0.2rem;
     margin-bottom: 0; /* Ensure no margin at bottom */
@@ -260,4 +258,45 @@ li {
     word-wrap: break-word;
     display: block;
     width: 100%;
+}
+
+.message-text.thinking {
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thinking-dots {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+}
+
+.thinking-dots span {
+    width: 8px;
+    height: 8px;
+    background-color: #66c0c5;
+    border-radius: 50%;
+    animation: thinking 1.4s infinite;
+    opacity: 0.4;
+}
+
+.thinking-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.thinking-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes thinking {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    50% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
 }

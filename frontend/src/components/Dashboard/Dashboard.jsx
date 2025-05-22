@@ -2,6 +2,7 @@ import React from 'react';
 import './Dashboard.css';
 import Alerts from '../Alerts/Alerts';
 import { GiMonoWheelRobot } from "react-icons/gi";
+import ChatBot from '../ChatBotPop/ChatBot/ChatBot';
 
 const Dashboard = () => {
     return (
@@ -13,6 +14,7 @@ const Dashboard = () => {
             <div className="dashboard-content">
                 <Alerts/>
             </div>
+            <ChatBot />
         </div>
     );
 }

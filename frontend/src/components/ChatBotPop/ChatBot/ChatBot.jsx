@@ -4,14 +4,13 @@ import { VscRobot } from "react-icons/vsc";
 import { FaTimes } from 'react-icons/fa';
 import ChatView from '../ChatView/ChatView';
 
-
 const ChatBot = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [dimensions, setDimensions] = useState({ width: 640, height: 800 });
+  const [dimensions, setDimensions] = useState({ width: 380, height: 600 });
   const chatWindowRef = useRef(null);
   const isResizing = useRef(false);
   const resizeType = useRef(null);
-  const startPos = useRef({ x: 0, width: 0 });
+  const startPos = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
   const toggleChat = () => setIsChatOpen(prev => !prev);
 
@@ -20,27 +19,34 @@ const ChatBot = () => {
       if (!isResizing.current || !chatWindowRef.current) return;
 
       const rect = chatWindowRef.current.getBoundingClientRect();
+      const minWidth = 320;
+      const minHeight = 400;
+      const maxWidth = window.innerWidth * 0.9;
+      const maxHeight = window.innerHeight * 0.8;
 
       if (resizeType.current === 'left') {
-        const distanceFromRight = window.innerWidth - e.clientX;
+        const deltaX = e.clientX - startPos.current.x;
         const newWidth = Math.min(
-          Math.max(300, distanceFromRight - 20),
-          window.innerWidth * 0.9
+          Math.max(minWidth, startPos.current.width - deltaX),
+          maxWidth
         );
         setDimensions(prev => ({ ...prev, width: newWidth }));
       } else if (resizeType.current === 'top') {
-        const distanceFromBottom = window.innerHeight - e.clientY;
+        const deltaY = e.clientY - startPos.current.y;
         const newHeight = Math.min(
-          Math.max(400, distanceFromBottom - 20),
-          window.innerHeight * 0.9
+          Math.max(minHeight, startPos.current.height - deltaY),
+          maxHeight
         );
         setDimensions(prev => ({ ...prev, height: newHeight }));
       }
     };
 
     const handleMouseUp = () => {
-      isResizing.current = false;
-      resizeType.current = null;
+      if (isResizing.current && chatWindowRef.current) {
+        chatWindowRef.current.classList.remove('resizing');
+        isResizing.current = false;
+        resizeType.current = null;
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -54,8 +60,18 @@ const ChatBot = () => {
 
   const startResize = (type) => (e) => {
     e.preventDefault();
-    isResizing.current = true;
-    resizeType.current = type;
+    if (chatWindowRef.current) {
+      const rect = chatWindowRef.current.getBoundingClientRect();
+      startPos.current = {
+        x: e.clientX,
+        y: e.clientY,
+        width: rect.width,
+        height: rect.height
+      };
+      isResizing.current = true;
+      resizeType.current = type;
+      chatWindowRef.current.classList.add('resizing');
+    }
   };
 
   return (
@@ -71,14 +87,16 @@ const ChatBot = () => {
             bottom: '20px'
           }}
         >
-          <div 
-            className="resize-handle-left" 
-            onMouseDown={startResize('left')}
-          />
-          <div 
-            className="resize-handle-top" 
-            onMouseDown={startResize('top')}
-          />
+          <div className="resize-handles">
+            <div 
+              className="resize-handle-left" 
+              onMouseDown={startResize('left')}
+            />
+            <div 
+              className="resize-handle-top" 
+              onMouseDown={startResize('top')}
+            />
+          </div>
           <div className="chat-header">
             <div className="chat-title">
               <VscRobot className="bot-icon" />

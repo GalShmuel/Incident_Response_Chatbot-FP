@@ -37,32 +37,76 @@
   background: linear-gradient(135deg, #66c0c5 0%, #43a3a8 100%);
   color: white;
   border: none;
-  border-radius: 100%;
-  width: 60px;
-  height: 60px;
+  border-radius: 50px;
+  width: auto;
+  min-width: 60px;
+  height: 45px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  gap: 8px;
+  padding: 0 24px;
+  box-shadow: 0 4px 12px rgba(67, 163, 168, 0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.chat-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #43a3a8 0%, #2a8a8f 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.chat-toggle:hover::before {
+  opacity: 1;
+}
+
+.chat-toggle span {
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 1;
+  margin-left: 4px;
 }
 
 .chat-toggle svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   transition: transform 0.3s ease;
+  z-index: 1;
 }
 
 .chat-toggle:hover {
-  background: linear-gradient(135deg, #43a3a8 0%, #2a8a8f 100%);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(67, 163, 168, 0.4);
 }
 
 .chat-toggle:hover svg {
-  transform: scale(1.1);
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.chat-toggle:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(67, 163, 168, 0.3);
+}
+
+@media (max-width: 768px) {
+  .chat-toggle {
+    width: 60px;
+    padding: 0;
+  }
+  
+  .chat-toggle span {
+    display: none;
+  }
 }
 
 .chat-window {
@@ -81,37 +125,88 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: width 0.15s ease, height 0.15s ease, transform 0.3s ease;
+  will-change: width, height;
+}
+
+/* Resize handles container */
+.resize-handles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 /* Left resize handle */
 .chat-window .resize-handle-left {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 4px;
+  left: -5px;
+  width: 10px;
   height: 100%;
   cursor: ew-resize;
   background: transparent;
   z-index: 1001;
+  pointer-events: auto;
 }
 
 /* Top resize handle */
 .chat-window .resize-handle-top {
   position: absolute;
-  top: 0;
+  top: -5px;
   left: 0;
   width: 100%;
-  height: 4px;
+  height: 10px;
   cursor: ns-resize;
   background: transparent;
   z-index: 1001;
+  pointer-events: auto;
+}
+
+/* Visual indicator for resize handles */
+.chat-window .resize-handle-left::after,
+.chat-window .resize-handle-top::after {
+  content: '';
+  position: absolute;
+  background: rgba(102, 192, 197, 0);
+  transition: background-color 0.2s ease;
+}
+
+.chat-window .resize-handle-left::after {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.chat-window .resize-handle-top::after {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  transform: translateY(-50%);
 }
 
 /* Hover effects for handles */
-.chat-window .resize-handle-left:hover,
-.chat-window .resize-handle-top:hover {
-  background: rgba(102, 192, 197, 0.2);
+.chat-window .resize-handle-left:hover::after,
+.chat-window .resize-handle-top:hover::after {
+  background: rgba(102, 192, 197, 0.5);
+}
+
+/* Active state for handles */
+.chat-window .resize-handle-left:active::after,
+.chat-window .resize-handle-top:active::after {
+  background: rgba(102, 192, 197, 0.8);
+}
+
+/* Add a class for when resizing is happening */
+.chat-window.resizing {
+  transition: none;
+  user-select: none;
+}
+
+.chat-window.resizing * {
+  pointer-events: none;
 }
 
 /* Chat header */

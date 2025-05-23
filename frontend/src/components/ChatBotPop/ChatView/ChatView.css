@@ -303,7 +303,8 @@ li {
 .recent-chats {
   padding: 12px;
   height: 100%;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .recent-chats h3 {
@@ -316,22 +317,56 @@ li {
 .recent-chats-list {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
   gap: 8px;
+  padding-bottom: 8px;
 }
 
 .recent-chat-item {
-  background: white;
-  border: 1px solid #e5e7eb;
+  position: relative;
+  padding: 12px;
   border-radius: 8px;
-  padding: 10px;
+  background: #f9fafb;
+  margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .recent-chat-item:hover {
-  background: #f9fafb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: #f3f4f6;
+}
+
+.delete-chat-button {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+.recent-chat-item:hover .delete-chat-button {
+  opacity: 1;
+}
+
+.delete-chat-button:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.delete-chat-button svg {
+  width: 14px;
+  height: 14px;
 }
 
 .recent-chat-time {
@@ -365,12 +400,12 @@ li {
 }
 
 .new-chat-button {
-  margin-top: 12px;
+  margin-top: auto;
   background: linear-gradient(135deg, #66c0c5 0%, #43a3a8 100%);
   color: white;
   border: none;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -380,9 +415,10 @@ li {
   justify-content: center;
   gap: 8px;
   font-size: 0.9rem;
-  position: relative;
-  overflow: hidden;
+  position: sticky;
+  bottom: 0;
   box-shadow: 0 2px 4px rgba(67, 163, 168, 0.2);
+  overflow: hidden;
 }
 
 .new-chat-button::before {
@@ -395,11 +431,13 @@ li {
   background: linear-gradient(135deg, #43a3a8 0%, #2a8a8f 100%);
   opacity: 0;
   transition: opacity 0.2s ease;
+  border-radius: 10px;
 }
 
 .new-chat-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(67, 163, 168, 0.3);
+  border-radius: 10px;
 }
 
 .new-chat-button:hover::before {

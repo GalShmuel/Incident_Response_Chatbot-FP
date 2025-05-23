@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Routes
 
-// Get recent chats (last 3)
+// Get recent chats (last 5)
 app.get('/api/chats/recent', async (req, res) => {
     try {
         const recentChats = await Chat.find()
@@ -29,6 +29,20 @@ app.get('/api/chats/recent', async (req, res) => {
         res.json(recentChats);
     } catch (error) {
         console.error('Error fetching recent chats:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Delete a chat
+app.delete('/api/chats/delete/:id', async (req, res) => {
+    try {
+        const chat = await Chat.findByIdAndDelete(req.params.id);
+        if (!chat) {
+            return res.status(404).json({ message: 'Chat not found' });
+        }
+        res.json({ message: 'Chat deleted successfully', deletedChat: chat });
+    } catch (error) {
+        console.error('Error deleting chat:', error);
         res.status(500).json({ message: error.message });
     }
 });

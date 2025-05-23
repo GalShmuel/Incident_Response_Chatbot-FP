@@ -3,6 +3,7 @@ import './ChatView.css';
 import { IoPersonOutline } from "react-icons/io5";
 import { RiRobot2Line } from "react-icons/ri";
 import { IoAddCircleOutline } from "react-icons/io5";
+import { FaTrash } from "react-icons/fa";
 import ChatInput from '../ChatInput/ChatInput';
 
 const API_URL = 'http://localhost:5000/api';
@@ -131,6 +132,32 @@ const ChatView = () => {
     }
   };
 
+  const deleteChat = async (chatId, e) => {
+    e.stopPropagation(); // Prevent chat selection when clicking delete
+    try {
+      const response = await fetch(`${API_URL}/chats/delete/${chatId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Failed to delete chat. Status: ${response.status}`);
+      }
+
+      // Remove the chat from the list
+      setRecentChats(prevChats => prevChats.filter(chat => chat._id !== chatId));
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      setError(`Failed to delete chat: ${error.message}`);
+      
+      // Clear error after 3 seconds
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
   return (
     <div className="ChatView">
       <div className="ChatMessages">
@@ -170,6 +197,13 @@ const ChatView = () => {
                             ))}
                           </div>
                         </div>
+                        <button 
+                          className="delete-chat-button"
+                          onClick={(e) => deleteChat(chat._id, e)}
+                          title="Delete chat"
+                        >
+                          <FaTrash />
+                        </button>
                       </div>
                     ))}
                   </>

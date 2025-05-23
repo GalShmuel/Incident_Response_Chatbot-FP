@@ -8,6 +8,121 @@ import ChatInput from '../ChatInput/ChatInput';
 
 const API_URL = 'http://localhost:5000/api';
 
+const formatJsonString = (content) => {
+  try {
+    // Check if the content is wrapped in ```json ``` format
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      const jsonStr = jsonMatch[1];
+      try {
+        // Check if the text is a JSON string
+        const jsonObj = JSON.parse(jsonStr);
+        
+        // Custom stringify function to handle escaped quotes and nested JSON
+        const customStringify = (obj, indent = 0) => {
+          if (typeof obj === 'string') {
+            try {
+              // Try to parse the string as JSON
+              const parsedJson = JSON.parse(obj);
+              if (typeof parsedJson === 'object' && parsedJson !== null) {
+                // If it's a valid JSON object/array, format it with proper indentation
+                const nestedJson = customStringify(parsedJson, indent + 2);
+                return `"\n${' '.repeat(indent + 2)}${nestedJson}\n${' '.repeat(indent)}"`;
+              }
+            } catch (e) {
+              // Not a JSON string, handle normally
+            }
+            // Replace escaped double quotes with single quotes for normal strings
+            return `"${obj.replace(/\\"/g, "'")}"`;
+          }
+          if (typeof obj !== 'object' || obj === null) {
+            return JSON.stringify(obj);
+          }
+          const isArray = Array.isArray(obj);
+          const items = Object.entries(obj).map(([key, value]) => {
+            const valueStr = customStringify(value, indent + 2);
+            return isArray ? valueStr : `"${key}": ${valueStr}`;
+          });
+          const bracket = isArray ? '[]' : '{}';
+          if (items.length === 0) return bracket;
+          return `${bracket[0]}\n${' '.repeat(indent + 2)}${items.join(',\n' + ' '.repeat(indent + 2))}\n${' '.repeat(indent)}${bracket[1]}`;
+        };
+
+        const formattedJson = customStringify(jsonObj);
+        
+        // Tokenize each line for proper coloring
+        // This regex matches: key-value pairs, strings, numbers, booleans, null, braces, brackets, commas, colons
+        const tokenRegex = /("[^"]*"\s*:\s*)|("[^"]*")|(\b\d+\.?\d*\b)|(\btrue\b|\bfalse\b)|(\bnull\b)|([{}\[\],:])/g;
+        const formattedContent = formattedJson.split('\n').map((line, index) => {
+          const tokens = line.match(tokenRegex) || [];
+          let lastIndex = 0;
+          const elements = [];
+          tokens.forEach((token, i) => {
+            const start = line.indexOf(token, lastIndex);
+            if (start > lastIndex) {
+              // Add any whitespace or non-token text
+              elements.push(line.slice(lastIndex, start));
+            }
+            lastIndex = start + token.length;
+            // Style tokens
+            if (/^"[^"]*"\s*:\s*$/.test(token)) {
+              // Key: wrap quotes in .json-quote
+              const match = token.match(/^("?)([^\"]*)("?)(\s*:\s*)$/);
+              if (match) {
+                elements.push(
+                  <span key={i} className="json-key">
+                    <span className="json-quote">"</span>{match[2]}<span className="json-quote">"</span>{match[4]}
+                  </span>
+                );
+              } else {
+                elements.push(<span key={i} className="json-key">{token}</span>);
+              }
+            } else if (/^"[^"]*"$/.test(token)) {
+              // String: wrap quotes in .json-quote
+              const inner = token.slice(1, -1);
+              elements.push(
+                <span key={i} className="json-string">
+                  <span className="json-quote">"</span>{inner}<span className="json-quote">"</span>
+                </span>
+              );
+            } else if (/^\d+\.?\d*$/.test(token)) {
+              elements.push(<span key={i} className="json-number">{token}</span>);
+            } else if (token === 'true' || token === 'false') {
+              elements.push(<span key={i} className="json-boolean">{token}</span>);
+            } else if (token === 'null') {
+              elements.push(<span key={i} className="json-null">{token}</span>);
+            } else if (/[{}\[\]]/.test(token)) {
+              elements.push(<span key={i} className="json-brace">{token}</span>);
+            } else if (token === ',' || token === ':') {
+              elements.push(token);
+            } else {
+              elements.push(token);
+            }
+          });
+          // Add any trailing text
+          if (lastIndex < line.length) {
+            elements.push(line.slice(lastIndex));
+          }
+          return <span key={index}>{elements}{'\n'}</span>;
+        });
+
+        return (
+          <pre className="json-block">
+            {formattedContent}
+          </pre>
+        );
+      } catch (e) {
+        console.error('Error parsing JSON:', e);
+        return content;
+      }
+    }
+    return content;
+  } catch (error) {
+    console.error('Error formatting JSON:', error);
+    return content;
+  }
+};
+
 const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -302,7 +417,10 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
                   {message.role === 'user' ? <IoPersonOutline className="icon" /> : <RiRobot2Line className="icon" />}
                 </div>
                 <div className="message-text">
-                  {message.content}
+                  {typeof message.content === 'string' && message.content.includes('```json') 
+                    ? formatJsonString(message.content)
+                    : <div dangerouslySetInnerHTML={{ __html: message.content }} />
+                  }
                   <div className="message-timestamp">
                     {message.timestamp}
                   </div>

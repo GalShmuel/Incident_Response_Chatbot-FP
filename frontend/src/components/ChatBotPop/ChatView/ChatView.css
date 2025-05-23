@@ -53,11 +53,12 @@
 }
 
 .message-text {
-    background-color: #f3f4f6;
-    padding: 9px 12px;
-    padding-bottom: 25px;  /* Space for timestamp */
-    border-radius: 12px;
-    max-width: 80%;
+    background-color: #f8f9fa;
+    padding: calc(0.6em + 0.3vw) calc(0.8em + 0.4vw);
+    padding-bottom: calc(1.5em + 0.5vw);
+    border-radius: 8px;
+    max-width: 95%;
+    min-width: 200px;
     line-height: 1.5;
     margin-top: 0;
     gap: 4px;
@@ -65,11 +66,13 @@
     box-sizing: border-box;
     overflow-wrap: break-word;
     word-wrap: break-word;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .message.user .message-text {
-    background-color: #66c0c5;
+    background: linear-gradient(135deg, #66c0c5 0%, #5ab5ba 100%);
     color: rgb(255, 255, 255);
+    box-shadow: 0 1px 2px rgba(102, 192, 197, 0.2);
     flex-direction: row-reverse;
     padding-bottom: 25px;  /* Keep same spacing as bot messages */
 }
@@ -127,7 +130,7 @@
 
 /* Code block styling */
 pre {
-    background-color: #1e1e1e;
+    background-color: #000000;
     border-radius: 6px;
     padding: 1rem;
     overflow-x: auto;
@@ -190,26 +193,87 @@ pre code {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* JSON formatting with responsive styles */
-.json-key { 
-    color: #9cdcfe; 
-    word-break: break-word;
+/* JSON block styling */
+.json-block {
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+    width: 100%;
+    box-sizing: border-box;
 }
-.json-string { 
-    color: #ce9178; 
-    word-break: break-word;
+
+.json-key {
+    color: #4ea9da;
 }
-.json-number { 
-    color: #b5cea8; 
-    word-break: break-word;
+
+.json-key .json-quote {
+    color: #f3efef;
 }
-.json-boolean { 
-    color: #569cd6; 
-    word-break: break-word;
+
+.json-string {
+    color: #ce9178;
 }
-.json-null { 
-    color: #569cd6; 
-    word-break: break-word;
+
+.json-string .json-quote {
+    color: #f3efef;
+}
+
+.json-number {
+    color: hsl(0, 65%, 58%);
+}
+
+.json-boolean {
+    color: #479f89;
+}
+
+.json-null {
+    color: #569cd6;
+}
+
+.json-brace {
+    color: #d4d4d4;
+}
+
+/* JSON block scrollbar styling */
+.json-block::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.json-block::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.json-block::-webkit-scrollbar-thumb {
+    background: #4e9da1;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.json-block::-webkit-scrollbar-thumb:hover {
+    background: #3d8a8e;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+/* Firefox scrollbar for JSON block */
+.json-block {
+    scrollbar-width: thin;
+    scrollbar-color: #4e9da1 rgba(0, 0, 0, 0.05);
+}
+
+/* Hover effects for JSON block */
+.json-block:hover {
+    border-color: rgba(78, 157, 161, 0.4);
+    box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
 }
 
 /* Markdown styling */
@@ -301,93 +365,97 @@ li {
 }
 
 .recent-chats {
-  padding: 12px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+    padding: 12px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .recent-chats h3 {
-  margin: 0 0 12px 0;
-  color: #374151;
-  font-size: 1rem;
-  font-weight: 600;
+    margin: 0 0 12px 0;
+    color: #374151;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 .recent-chats-list {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow-y: auto;
-  gap: 8px;
-  padding-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    gap: 8px;
+    padding-bottom: 8px;
 }
 
 .recent-chat-item {
-  position: relative;
-  padding: 12px;
-  border-radius: 8px;
-  background: #f9fafb;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+    position: relative;
+    padding: 12px;
+    border-radius: 8px;
+    background: #f9fafb;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .recent-chat-item.deleting {
-  background: #fee2e2;
-  opacity: 0;
-  pointer-events: none;
+    background: #fee2e2;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .recent-chat-item:hover {
-  background: #f3f4f6;
+    background: #f3f4f6;
 }
 
 .delete-chat-button {
-  background: none;
-  border: none;
-  color: #9ca3af;
-  padding: 4px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
 }
 
 .recent-chat-item:hover .delete-chat-button {
-  opacity: 1;
+    opacity: 1;
 }
 
 .delete-chat-button:hover {
-  background: #fee2e2;
-  color: #dc2626;
+    background: #fee2e2;
+    color: #dc2626;
 }
 
 .delete-chat-button svg {
-  width: 14px;
-  height: 14px;
+    width: 14px;
+    height: 14px;
 }
 
 .recent-chat-time {
-  font-size: 0.7rem;
-  color: #6b7280;
-  margin-bottom: 4px;
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-bottom: 4px;
 }
 
 .recent-chat-messages {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .preview-message {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    color: #374151;
+    white-space: nowrap;
   font-size: 0.8rem;
   line-height: 1.3;
   color: #374151;

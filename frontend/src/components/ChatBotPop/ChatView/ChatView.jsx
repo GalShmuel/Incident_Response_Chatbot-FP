@@ -8,23 +8,26 @@ import ChatInput from '../ChatInput/ChatInput';
 
 const API_URL = 'http://localhost:5000/api';
 
-const ChatView = () => {
+const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   const [chatId, setChatId] = useState(null);
   const [recentChats, setRecentChats] = useState([]);
-  const [showRecentChats, setShowRecentChats] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingChatId, setDeletingChatId] = useState(null);
   const messagesEndRef = useRef(null);
+  const [currentAlertData, setCurrentAlertData] = useState(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const fetchRecentChats = async () => {
+  const fetchRecentChats = async (showLoadingState = true) => {
     try {
-      setIsLoading(true);
+      if (showLoadingState) {
+        setIsLoading(true);
+      }
       setError(null);
       const response = await fetch(`${API_URL}/chats/recent`);
       if (!response.ok) {
@@ -37,7 +40,9 @@ const ChatView = () => {
       setError('Failed to load recent chats. Please try again.');
       setRecentChats([]);
     } finally {
-      setIsLoading(false);
+      if (showLoadingState) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -45,6 +50,42 @@ const ChatView = () => {
     setChatId(selectedChat._id);
     setMessages(selectedChat.messages);
     setShowRecentChats(false);
+  };
+
+  // Effect to handle new alert data
+  useEffect(() => {
+    if (alertData) {
+      setCurrentAlertData(alertData);
+      initializeNewChatWithAlert(alertData);
+    }
+  }, [alertData]);
+
+  const initializeNewChatWithAlert = async (alert) => {
+    try {
+      const response = await fetch(`${API_URL}/chats`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [{
+            role: 'user',
+            content: `\`\`\`json\n${JSON.stringify(alert, null, 2)}\n\`\`\``,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }, {
+            role: 'bot',
+            content: "I see you've shared an alert with me. I'll help you understand it better. What would you like to know about this alert?",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }]
+        })
+      });
+      const data = await response.json();
+      setChatId(data._id);
+      setMessages(data.messages);
+      setShowRecentChats(false);
+    } catch (error) {
+      console.error('Error creating chat session with alert:', error);
+    }
   };
 
   const initializeNewChat = async () => {
@@ -99,35 +140,49 @@ const ChatView = () => {
 
   const handleMessageSend = async (content) => {
     try {
-      const userMessage = {
+      const initialUserMessage = {
         role: 'user',
         content,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       
-      await addMessage(userMessage);
+      await addMessage(initialUserMessage);
       setIsThinking(true);
 
-      // Here you would typically make an API call to your backend
-      // For now, we'll just simulate a response
-      setTimeout(async () => {
-        const botMessage = {
-          role: 'bot',
-          content: 'This is a placeholder response. Backend integration pending.',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        await addMessage(botMessage);
-        setIsThinking(false);
-      }, 1000);
+      // Send the message and complete alert data to the backend
+      const response = await fetch(`${API_URL}/chat/process`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: content,
+          alertData: currentAlertData // Send the complete alert data
+        })
+      });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const botMessage = {
+        role: 'bot',
+        content: data.response,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      await addMessage(botMessage);
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error processing message:', error);
       const errorMessage = {
         role: 'bot',
         content: 'Sorry, I encountered an error processing your message.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       await addMessage(errorMessage);
+    } finally {
       setIsThinking(false);
     }
   };
@@ -135,6 +190,12 @@ const ChatView = () => {
   const deleteChat = async (chatId, e) => {
     e.stopPropagation(); // Prevent chat selection when clicking delete
     try {
+      // Set the deleting state
+      setDeletingChatId(chatId);
+
+      // Wait for animation
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const response = await fetch(`${API_URL}/chats/delete/${chatId}`, {
         method: 'DELETE',
         headers: {
@@ -149,12 +210,16 @@ const ChatView = () => {
 
       // Remove the chat from the list
       setRecentChats(prevChats => prevChats.filter(chat => chat._id !== chatId));
+      
+      // Fetch updated chats in background without loading state
+      await fetchRecentChats(false);
     } catch (error) {
       console.error('Error deleting chat:', error);
       setError(`Failed to delete chat: ${error.message}`);
-      
-      // Clear error after 3 seconds
+      await fetchRecentChats(false);
       setTimeout(() => setError(null), 3000);
+    } finally {
+      setDeletingChatId(null);
     }
   };
 
@@ -180,7 +245,7 @@ const ChatView = () => {
                     {recentChats.map((chat) => (
                       <div
                         key={chat._id}
-                        className="recent-chat-item"
+                        className={`recent-chat-item ${deletingChatId === chat._id ? 'deleting' : ''}`}
                         onClick={() => selectChat(chat)}
                       >
                         <div className="recent-chat-preview">
@@ -201,6 +266,7 @@ const ChatView = () => {
                           className="delete-chat-button"
                           onClick={(e) => deleteChat(chat._id, e)}
                           title="Delete chat"
+                          disabled={deletingChatId === chat._id}
                         >
                           <FaTrash />
                         </button>

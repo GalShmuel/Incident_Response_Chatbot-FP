@@ -30,42 +30,41 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleString();
 };
 
-const AlertCard = ({ finding }) => {
-  const {
-    Title,
-    Description,
-    Severity,
-    Type,
-    CreatedAt,
-    Id
-  } = finding;
+const AlertCard = ({ finding, onAlertClick }) => {
+  const handleClick = () => {
+    if (onAlertClick) {
+      onAlertClick(finding);
+    }
+  };
 
   return (
     <div 
       className="alert-card" 
       style={{
-        border: `2px solid ${getSeverityColor(Severity)}`,
-        backgroundColor: hexToRGBA(getSeverityColor(Severity), 0.15),
-        position: 'relative'
+        border: `2px solid ${getSeverityColor(finding.Severity)}`,
+        backgroundColor: hexToRGBA(getSeverityColor(finding.Severity), 0.15),
+        position: 'relative',
+        cursor: 'pointer'
       }}
+      onClick={handleClick}
     >
       <div 
         className="severity-badge"
-        style={{ border: `2px solid ${getSeverityColor(Severity)}` }}
+        style={{ border: `2px solid ${getSeverityColor(finding.Severity)}` }}
       >
-        Severity: {Severity}
+        Severity: {finding.Severity}
       </div>
       <div className="alert-card-header">
-        <h3>{Title}</h3>
+        <h3>{finding.Title}</h3>
         <div className="created-at">
-          Created: {formatDate(CreatedAt)}
+          Created: {formatDate(finding.CreatedAt)}
         </div>
       </div>
       <div className="alert-content">
-        <p className="description">{Description}</p>
+        <p className="description">{finding.Description}</p>
         <div className="alert-details">
-          <p><strong>Type:</strong> {Type}</p>
-          <p><strong>ID:</strong> {Id}</p>
+          <p><strong>Type:</strong> {finding.Type}</p>
+          <p><strong>ID:</strong> {finding.Id}</p>
         </div>
       </div>
     </div>

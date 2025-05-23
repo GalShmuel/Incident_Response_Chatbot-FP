@@ -4,7 +4,7 @@ import AlertCard from '../AlertCard/AlertCard';
 import AlertFilters from '../AlertFilters/AlertFilters';
 import './Alerts.css';
 
-const Alerts = () => {
+const Alerts = ({ onAlertClick }) => {
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [uniqueFindings, setUniqueFindings] = useState([]);
 
@@ -38,7 +38,8 @@ const Alerts = () => {
         {filteredFindings.map((finding, index) => (
           <AlertCard 
             key={`${finding.Id}-${index}`} 
-            finding={finding} 
+            finding={finding}
+            onAlertClick={onAlertClick}
           />
         ))}
         {filteredFindings.length === 0 && (

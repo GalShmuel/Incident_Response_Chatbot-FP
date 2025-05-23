@@ -2,17 +2,18 @@ import React, { useRef, useEffect, useState } from 'react';
 import './ChatBot.css';
 import { VscRobot } from "react-icons/vsc";
 import { FaTimes } from 'react-icons/fa';
+import { MdHistory } from "react-icons/md";
 import ChatView from '../ChatView/ChatView';
 
-const ChatBot = () => {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+const ChatBot = ({ isOpen, setIsOpen, alertData }) => {
+  const [showRecentChats, setShowRecentChats] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 380, height: 600 });
   const chatWindowRef = useRef(null);
   const isResizing = useRef(false);
   const resizeType = useRef(null);
   const startPos = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
-  const toggleChat = () => setIsChatOpen(prev => !prev);
+  const toggleChat = () => setIsOpen(prev => !prev);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -75,13 +76,13 @@ const ChatBot = () => {
   };
 
   return (
-    <div className={`chatbot-container ${isChatOpen ? 'open' : ''}`}>
-      {isChatOpen ? (
+    <div className={`chatbot-container ${isOpen ? 'open' : ''}`}>
+      {isOpen ? (
         <div
-          className="chat-window"
           ref={chatWindowRef}
-          style={{ 
-            width: `${dimensions.width}px`, 
+          className="chat-window"
+          style={{
+            width: `${dimensions.width}px`,
             height: `${dimensions.height}px`,
             right: '20px',
             bottom: '20px'
@@ -102,11 +103,24 @@ const ChatBot = () => {
               <VscRobot className="bot-icon" />
               <span>AI Assistant</span>
             </div>
-            <button className="close-button" onClick={toggleChat}>
-              <FaTimes />
-            </button>
+            <div className="chat-controls">
+              <button
+                className="history-button"
+                onClick={() => setShowRecentChats(!showRecentChats)}
+                title="View chat history"
+              >
+                <MdHistory />
+              </button>
+              <button className="close-button" onClick={toggleChat}>
+                <FaTimes />
+              </button>
+            </div>
           </div>
-          <ChatView />
+          <ChatView 
+            showRecentChats={showRecentChats} 
+            setShowRecentChats={setShowRecentChats}
+            alertData={alertData}
+          />
         </div>
       ) : (
         <button className="chat-toggle" onClick={toggleChat}>

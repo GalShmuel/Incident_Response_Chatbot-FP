@@ -150,6 +150,9 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       }
       const data = await response.json();
       setRecentChats(Array.isArray(data) ? data : []);
+      if (data.length === 0) {
+        initializeNewChat();
+      }
     } catch (error) {
       console.error('Error fetching recent chats:', error);
       setError('Failed to load recent chats. Please try again.');
@@ -236,6 +239,13 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
   useEffect(() => {
     fetchRecentChats();
   }, []); // Fetch recent chats on mount
+
+  // Effect to initialize a new chat if none is loaded after fetching recent chats
+  useEffect(() => {
+    if (!isLoading && !chatId && recentChats.length === 0) {
+      initializeNewChat();
+    }
+  }, [isLoading, chatId, recentChats, initializeNewChat]);
 
   useEffect(() => {
     scrollToBottom();

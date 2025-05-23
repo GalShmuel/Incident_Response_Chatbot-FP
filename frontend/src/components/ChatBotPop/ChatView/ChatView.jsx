@@ -54,11 +54,11 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
   // Effect to handle new alert data
   useEffect(() => {
-    if (alertData) {
+    if (alertData && alertData !== currentAlertData) {
       setCurrentAlertData(alertData);
       initializeNewChatWithAlert(alertData);
     }
-  }, [alertData]);
+  }, [alertData, currentAlertData]);
 
   const initializeNewChatWithAlert = async (alert) => {
     try {
@@ -83,6 +83,9 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       setChatId(data._id);
       setMessages(data.messages);
       setShowRecentChats(false);
+      
+      // Update recent chats in the background
+      await fetchRecentChats(false);
     } catch (error) {
       console.error('Error creating chat session with alert:', error);
     }
@@ -107,6 +110,9 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       setChatId(data._id);
       setMessages(data.messages);
       setShowRecentChats(false);
+      
+      // Update recent chats in the background
+      await fetchRecentChats(false);
     } catch (error) {
       console.error('Error creating chat session:', error);
     }

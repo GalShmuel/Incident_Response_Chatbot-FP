@@ -289,10 +289,12 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         await initializeNewChat();
       }
 
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
       const initialUserMessage = {
         role: 'user',
         content,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp
       };
       
       // Add user message immediately to show it in the UI
@@ -302,7 +304,7 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       // Set thinking state before making the API call
       setIsThinking(true);
 
-      // Send the message and complete alert data to the backend
+      // Send the message to the backend, which will forward it to AutoGen
       const response = await fetch(`${API_URL}/chat/process`, {
         method: 'POST',
         headers: {
@@ -310,7 +312,8 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         },
         body: JSON.stringify({
           message: content,
-          alertData: currentAlertData
+          alertData: currentAlertData,
+          timestamp
         })
       });
 
@@ -320,24 +323,27 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
       const data = await response.json();
       
+      // Create bot message from AutoGen response
       const botMessage = {
-        role: 'bot',
+        role: 'assistant',
         content: data.response,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      // Add bot message and turn off thinking state at the same time
+      // Add bot message and turn off thinking state
       setIsThinking(false);
       setMessages(prevMessages => [...prevMessages, botMessage]);
       await addMessage(botMessage);
+
+      // Refresh recent chats to show the updated conversation
+      await fetchRecentChats(false);
     } catch (error) {
       console.error('Error processing message:', error);
       const errorMessage = {
-        role: 'bot',
+        role: 'assistant',
         content: 'Sorry, I encountered an error processing your message. Please try again.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      // Add error message and turn off thinking state at the same time
       setIsThinking(false);
       setMessages(prevMessages => [...prevMessages, errorMessage]);
       await addMessage(errorMessage);
@@ -397,7 +403,7 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
               </div>
             ) : (
               <div className="recent-chats-list">
-                {recentChats.length > 0 ? (
+                {recentChats && recentChats.length > 0 ? (
                   <>
                     {recentChats.map((chat) => (
                       <div
@@ -410,9 +416,9 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
                             {new Date(chat.updatedAt).toLocaleString()}
                           </div>
                           <div className="recent-chat-messages">
-                            {chat.messages.slice(-2).map((msg, idx) => (
+                            {chat.messages && chat.messages.slice(-2).map((msg, idx) => (
                               <div key={idx} className={`preview-message ${msg.role}`}>
-                                {msg.content.length > 50 
+                                {msg.content && msg.content.length > 50 
                                   ? msg.content.substring(0, 50) + '...' 
                                   : msg.content}
                               </div>
@@ -447,22 +453,28 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
           </div>
         ) : (
           <>
-            {messages.map((message, index) => (
-              <div key={index} className={`message ${message.role}`}>
-                <div className={`icon-wrapper ${message.role === 'user' ? 'user-icon-wrapper' : 'bot-icon-wrapper'}`}>
-                  {message.role === 'user' ? <IoPersonOutline className="icon" /> : <RiRobot2Line className="icon" />}
-                </div>
-                <div className="message-text">
-                  {typeof message.content === 'string' && message.content.includes('```json') 
-                    ? formatJsonString(message.content)
-                    : <div dangerouslySetInnerHTML={{ __html: message.content }} />
-                  }
-                  <div className="message-timestamp">
-                    {message.timestamp}
+            {messages && messages.length > 0 ? (
+              messages.map((message, index) => (
+                <div key={index} className={`message ${message.role}`}>
+                  <div className={`icon-wrapper ${message.role === 'user' ? 'user-icon-wrapper' : 'bot-icon-wrapper'}`}>
+                    {message.role === 'user' ? <IoPersonOutline className="icon" /> : <RiRobot2Line className="icon" />}
+                  </div>
+                  <div className="message-text">
+                    {typeof message.content === 'string' && message.content.includes('```json') 
+                      ? formatJsonString(message.content)
+                      : <div dangerouslySetInnerHTML={{ __html: message.content }} />
+                    }
+                    <div className="message-timestamp">
+                      {message.timestamp}
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="no-messages">
+                Start a new conversation by sending a message.
               </div>
-            ))}
+            )}
             {isThinking && (
               <div className="message bot">
                 <div className="icon-wrapper bot-icon-wrapper">

@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const axios = require('axios');
 const Chat = require('./models/Chat');
 
 const app = express();
@@ -98,6 +99,65 @@ app.post('/api/chats/:id/messages', async (req, res) => {
         res.json(chat);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+});
+
+// Process chat message with AutoGen
+app.post('/api/chat/process', async (req, res) => {
+    try {
+        const { message, alertData, timestamp } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        console.log('Received message:', { message, timestamp });
+
+        // Forward message to AutoGen server
+        const autogenResponse = await axios.post(`${process.env.AUTOGEN_URL}/api/chat`, {
+            message,
+            alertData
+        });
+
+        console.log('AutoGen response:', autogenResponse.data);
+
+        // Create messages with timestamps
+        const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const messages = [
+            {
+                role: 'user',
+                content: message,
+                timestamp: timestamp || currentTime
+            },
+            {
+                role: 'assistant',
+                content: autogenResponse.data.content,
+                timestamp: currentTime
+            }
+        ];
+
+        // Create a new chat
+        const chat = new Chat();
+        chat.messages = messages;
+
+        console.log('Created chat object:', JSON.stringify(chat, null, 2));
+
+        // Save the chat
+        const savedChat = await chat.save();
+        console.log('Chat saved successfully:', savedChat._id);
+
+        // Return AutoGen's response
+        res.json({
+            response: autogenResponse.data.content,
+            role: 'assistant',
+            timestamp: currentTime
+        });
+    } catch (error) {
+        console.error('Error processing chat message:', error);
+        res.status(500).json({ 
+            error: 'Failed to process message',
+            details: error.message 
+        });
     }
 });
 

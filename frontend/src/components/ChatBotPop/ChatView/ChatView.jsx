@@ -211,23 +211,26 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
   const initializeNewChat = async () => {
     try {
+      const welcomeMessage = {
+        role: 'bot',
+        content: "Hello, I'm here to help you understand the Alerts.\n\nClick on one of them to get information.",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      // Set the welcome message immediately in the UI
+      setMessages([welcomeMessage]);
+
       const response = await fetch(`${API_URL}/chats`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [{
-            role: 'bot',
-            content: "Hello, I'm here to help you understand the Alerts.\n\nClick on one of them to get information.",
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }]
+          messages: [welcomeMessage]
         })
       });
       const data = await response.json();
       setChatId(data._id);
-      setMessages(data.messages);
-      setShowRecentChats(false);
       
       // Update recent chats in the background
       await fetchRecentChats(false);
@@ -245,7 +248,14 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
     if (!isLoading && !chatId && recentChats.length === 0) {
       initializeNewChat();
     }
-  }, [isLoading, chatId, recentChats, initializeNewChat]);
+  }, [isLoading, chatId, recentChats]);
+
+  // Add a new effect to ensure welcome message is shown when chat is first opened
+  useEffect(() => {
+    if (!showRecentChats && messages.length === 0) {
+      initializeNewChat();
+    }
+  }, [showRecentChats]);
 
   useEffect(() => {
     scrollToBottom();
@@ -271,13 +281,22 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
   const handleMessageSend = async (content) => {
     try {
+      // If no chatId exists, create a new chat first
+      if (!chatId) {
+        await initializeNewChat();
+      }
+
       const initialUserMessage = {
         role: 'user',
         content,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       
+      // Add user message immediately to show it in the UI
+      setMessages(prevMessages => [...prevMessages, initialUserMessage]);
       await addMessage(initialUserMessage);
+      
+      // Set thinking state before making the API call
       setIsThinking(true);
 
       // Send the message and complete alert data to the backend
@@ -288,7 +307,7 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         },
         body: JSON.stringify({
           message: content,
-          alertData: currentAlertData // Send the complete alert data
+          alertData: currentAlertData
         })
       });
 
@@ -304,17 +323,21 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
+      // Add bot message and turn off thinking state at the same time
+      setIsThinking(false);
+      setMessages(prevMessages => [...prevMessages, botMessage]);
       await addMessage(botMessage);
     } catch (error) {
       console.error('Error processing message:', error);
       const errorMessage = {
         role: 'bot',
-        content: 'Sorry, I encountered an error processing your message.',
+        content: 'Sorry, I encountered an error processing your message. Please try again.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      await addMessage(errorMessage);
-    } finally {
+      // Add error message and turn off thinking state at the same time
       setIsThinking(false);
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+      await addMessage(errorMessage);
     }
   };
 

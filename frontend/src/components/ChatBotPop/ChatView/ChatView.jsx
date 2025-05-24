@@ -234,6 +234,9 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       
       // Update recent chats in the background
       await fetchRecentChats(false);
+      
+      // Switch to chat view
+      setShowRecentChats(false);
     } catch (error) {
       console.error('Error creating chat session:', error);
     }

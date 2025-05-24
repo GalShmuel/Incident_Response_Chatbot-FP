@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Environment
+autogen-env/
+.env
+.env.*
+
+# FastAPI / Uvicorn
+*.log
+*.db
+instance/
+*.sqlite3
+
+# VSCode / PyCharm / JetBrains
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# pytest / testing
+.pytest_cache/
+coverage.*
+htmlcov/
+
+# Autogen / OpenAI caches (if any)
+autogen_cache/
+
+# Notebook checkpoints (if you use Jupyter)
+.ipynb_checkpoints/
+
+# Compiled C files
+build/
+dist/
+*.egg-info/
+
+# API key/config backups (if any)
+config.json
+secrets.json
+openai_key.txt
+openrouter_key.txt

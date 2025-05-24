@@ -2,7 +2,7 @@
     {
         "model": "thudm/glm-z1-32b:free",
         "base_url": "https://openrouter.ai/api/v1",
-        "api_key": "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",
+        "api_key": "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",
         "price": [0.01, 0.005]
     }
 ]

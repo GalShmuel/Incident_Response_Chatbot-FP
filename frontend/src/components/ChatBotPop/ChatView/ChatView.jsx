@@ -173,6 +173,7 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
   // Effect to handle new alert data
   useEffect(() => {
     if (alertData && alertData !== currentAlertData) {
+      console.log('New alert data received:', alertData);
       setCurrentAlertData(alertData);
       initializeNewChatWithAlert(alertData);
     }
@@ -180,28 +181,111 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
   const initializeNewChatWithAlert = async (alert) => {
     try {
+      console.log('Initializing chat with alert:', alert);
+      
+      // Format the alert data as a JSON string for better readability
+      const formattedAlert = `\`\`\`json\n${JSON.stringify(alert, null, 2)}\n\`\`\``;
+      console.log('Formatted alert:', formattedAlert);
+      
+      // Create initial user message with the alert
+      const userMessage = {
+        role: 'user',
+        content: formattedAlert,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      // Create new chat with the alert message
       const response = await fetch(`${API_URL}/chats`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [{
-            role: 'user',
-            content: `\`\`\`json\n${JSON.stringify(alert, null, 2)}\n\`\`\``,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }]
+          messages: [userMessage]
         })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Failed to create chat: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log('Chat created:', data);
+      
       setChatId(data._id);
-      setMessages(data.messages);
+      setMessages([userMessage]);
       setShowRecentChats(false);
+
+      // Set thinking state
+      setIsThinking(true);
+
+      // Immediately send the alert to get an initial response
+      const processResponse = await fetch(`${API_URL}/chat/process`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: formattedAlert,
+          alertData: alert,
+          timestamp: userMessage.timestamp,
+          chatId: data._id
+        })
+      });
+
+      if (!processResponse.ok) {
+        const errorData = await processResponse.json().catch(() => null);
+        console.error('Process response error:', errorData);
+        throw new Error(errorData?.message || `Failed to process alert: ${processResponse.status}`);
+      }
+
+      const processData = await processResponse.json();
+      console.log('Process response:', processData);
+      
+      if (!processData.response) {
+        throw new Error('No response content received from the server');
+      }
+
+      // Clear thinking state before adding the response
+      setIsThinking(false);
+
+      // Add the bot's response to the messages
+      const botMessage = {
+        role: 'assistant',
+        content: processData.response,
+        timestamp: processData.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      // Update messages in state
+      setMessages(prevMessages => [...prevMessages, botMessage]);
+
+      // Save both messages to the backend in a single request
+      const saveResponse = await fetch(`${API_URL}/chats/${data._id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([userMessage, botMessage])
+      });
+
+      if (!saveResponse.ok) {
+        const errorText = await saveResponse.text();
+        console.warn('Failed to save messages:', errorText);
+      }
       
       // Update recent chats in the background
       await fetchRecentChats(false);
     } catch (error) {
       console.error('Error creating chat session with alert:', error);
+      // Show error message to user
+      const errorMessage = {
+        role: 'assistant',
+        content: `Sorry, I encountered an error processing the alert: ${error.message}. Please try again.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+      setIsThinking(false);
     }
   };
 
@@ -216,6 +300,7 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       // Set the welcome message immediately in the UI
       setMessages([welcomeMessage]);
 
+      // Create new chat with just the welcome message
       const response = await fetch(`${API_URL}/chats`, {
         method: 'POST',
         headers: {
@@ -323,6 +408,9 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
       const data = await response.json();
       
+      // Clear thinking state before adding the response
+      setIsThinking(false);
+
       // Create bot message from AutoGen response
       const botMessage = {
         role: 'assistant',
@@ -355,8 +443,6 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
-    } finally {
-      // Always turn off thinking state when done
       setIsThinking(false);
     }
   };

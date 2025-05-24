@@ -26,12 +26,22 @@ def chat():
         # Extract the message from the request
         data = request.json
         message = data.get('message', '')
+        alert_data = data.get('alertData', {})
         
         print(f"🔵 [Autogen] Received message: {message}")
+        print(f"🔵 [Autogen] Received alert data: {json.dumps(alert_data, indent=2)}")
         
         if not message:
             print("🔴 [Autogen] Error: Message is required")
             return jsonify({'error': 'Message is required'}), 400
+
+        # Check if this is a welcome message or system message
+        if message.startswith("Hello, I'm here to help") or message.startswith("Sorry, I encountered an error"):
+            print("🟡 [Autogen] Skipping processing of welcome/error message")
+            return jsonify({
+                'role': 'assistant',
+                'content': message
+            })
         
         # Prepare the payload to send to OpenRouter API
         payload = {
@@ -82,22 +92,17 @@ def chat():
                 
                 # Extract the assistant's message from the response
                 assistant_message = response_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                if not assistant_message:
+                    print("🔴 [Autogen] Error: No content in assistant message")
+                    return jsonify({
+                        'error': 'No content in assistant message',
+                        'details': response_data
+                    }), 500
+                
                 print(f"🟢 [Autogen] Extracted assistant message: {assistant_message}")
                 
-                # Save the chat to the backend server
-                try:
-                    backend_payload = {
-                        "messages": [
-                            {"role": "user", "content": message},
-                            {"role": "assistant", "content": assistant_message}
-                        ]
-                    }
-                    backend_response = requests.post(f"{BACKEND_URL}/api/chats", json=backend_payload)
-                    if backend_response.status_code != 201:
-                        print(f"⚠️ [Autogen] Warning: Failed to save chat to backend: {backend_response.text}")
-                except Exception as e:
-                    print(f"⚠️ [Autogen] Warning: Error saving chat to backend: {str(e)}")
-                
+                # Return the response without saving to backend
+                # The frontend will handle saving the chat
                 return jsonify({
                     'role': 'assistant',
                     'content': assistant_message

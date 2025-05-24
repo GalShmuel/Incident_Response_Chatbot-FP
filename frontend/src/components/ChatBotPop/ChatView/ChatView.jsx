@@ -123,6 +123,43 @@ const formatJsonString = (content) => {
   }
 };
 
+const formatMessage = (content) => {
+  if (typeof content !== 'string') return content;
+
+  // Handle code blocks with language specification
+  if (content.includes('```')) {
+    // First handle JSON blocks
+    if (content.includes('```json')) {
+      return formatJsonString(content);
+    }
+    
+    // Handle other code blocks
+    content = content.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      return `<pre class="code-block ${lang || ''}"><code>${code.trim()}</code></pre>`;
+    });
+  }
+
+  // Format headings (h1-h4)
+  content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+  content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+  content = content.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+  content = content.replace(/^#### (.*$)/gm, '<h4>$1</h4>');
+
+  // Format bold text
+  content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Format underlined text
+  content = content.replace(/__(.*?)__/g, '<u>$1</u>');
+
+  // Format colored text
+  content = content.replace(/\[color=(.*?)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>');
+
+  // Convert line breaks to <br>
+  content = content.replace(/\n/g, '<br>');
+
+  return content;
+};
+
 const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -557,8 +594,10 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
                     {message.role === 'user' ? <IoPersonOutline className="icon" /> : <RiRobot2Line className="icon" />}
                   </div>
                   <div className="message-text">
-                    {typeof message.content === 'string' && message.content.includes('```json') 
-                      ? formatJsonString(message.content)
+                    {typeof message.content === 'string' 
+                      ? message.content.includes('```json')
+                        ? formatJsonString(message.content)
+                        : <div dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
                       : <div dangerouslySetInnerHTML={{ __html: message.content }} />
                     }
                     <div className="message-timestamp">

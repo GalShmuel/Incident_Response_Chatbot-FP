@@ -129,46 +129,70 @@
 }
 
 /* Code block styling */
-pre {
-    background-color: #000000;
+.code-block {
+    background-color: #1c1b1b;
     border-radius: 6px;
     padding: 1rem;
-    overflow-x: auto;
     margin: 0.5rem 0;
     position: relative;
     width: 100%;
     box-sizing: border-box;
+    font-family: 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #e5e7eb;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
 }
 
-pre::-webkit-scrollbar {
+.code-block code {
+    display: block;
+    width: 100%;
+}
+
+/* Language-specific styling */
+.code-block.bash {
+    color: #e5e7eb;
+}
+
+.code-block.bash .command {
+    color: #66c0c5;
+}
+
+.code-block.bash .option {
+    color: #9cdcfe;
+}
+
+.code-block.bash .string {
+    color: #ce9178;
+}
+
+/* Scrollbar styling for code blocks */
+.code-block::-webkit-scrollbar {
     height: 8px;
 }
 
-pre::-webkit-scrollbar-track {
+.code-block::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
 }
 
-pre::-webkit-scrollbar-thumb {
+.code-block::-webkit-scrollbar-thumb {
     background: #4e9da1;
     border-radius: 8px;
     border: 2px solid transparent;
     background-clip: padding-box;
 }
 
-pre::-webkit-scrollbar-thumb:hover {
+.code-block::-webkit-scrollbar-thumb:hover {
     background: #3d8a8e;
 }
 
-pre code {
-    font-family: 'Fira Code', monospace;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #e5e7eb;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    display: block;
-    width: 100%;
+/* Firefox scrollbar for code blocks */
+.code-block {
+    scrollbar-width: thin;
+    scrollbar-color: #4e9da1 rgba(0, 0, 0, 0.2);
 }
 
 .code-block-header {
@@ -630,4 +654,64 @@ li {
 .history-button svg {
     width: 20px;
     height: 20px;
+}
+
+/* Rich text formatting styles */
+.message-text h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+  color: inherit;
+}
+
+.message-text h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+  color: inherit;
+}
+
+.message-text h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+  color: inherit;
+}
+
+.message-text h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+  color: inherit;
+}
+
+.message-text strong {
+  font-weight: 700;
+}
+
+.message-text u {
+  text-decoration: underline;
+}
+
+/* Ensure proper spacing between formatted elements */
+.message-text > * {
+  margin: 0.3rem 0;
+}
+
+.message-text > *:first-child {
+  margin-top: 0;
+}
+
+.message-text > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure proper color inheritance for user messages */
+.message.user .message-text h1,
+.message.user .message-text h2,
+.message.user .message-text h3,
+.message.user .message-text h4,
+.message.user .message-text strong,
+.message.user .message-text u {
+  color: white;
 }

@@ -279,6 +279,11 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
   };
 
   const handleMessageSend = async (content) => {
+    // Prevent sending if already thinking
+    if (isThinking) {
+      return;
+    }
+
     try {
       // If no chatId exists, create a new chat first
       if (!chatId) {
@@ -287,18 +292,16 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
-      const initialUserMessage = {
+      // Create user message
+      const userMessage = {
         role: 'user',
         content,
         timestamp
       };
-      
-      // Add user message immediately to show it in the UI
-      setMessages(prevMessages => [...prevMessages, initialUserMessage]);
-      await addMessage(initialUserMessage);
-      
-      // Set thinking state before making the API call
+
+      // Set thinking state and show user message immediately
       setIsThinking(true);
+      setMessages(prevMessages => [...prevMessages, userMessage]);
 
       // Send the message to the backend, which will forward it to AutoGen
       const response = await fetch(`${API_URL}/chat/process`, {
@@ -324,14 +327,23 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       const botMessage = {
         role: 'assistant',
         content: data.response,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: data.timestamp
       };
 
-      // Add bot message and turn off thinking state
-      setIsThinking(false);
-      // Preserve existing messages and append the new bot message
+      // Add bot message to UI
       setMessages(prevMessages => [...prevMessages, botMessage]);
-      await addMessage(botMessage);
+
+      // Save both messages to backend
+      const messagesToSave = [userMessage, botMessage];
+      for (const message of messagesToSave) {
+        await fetch(`${API_URL}/chats/${chatId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(message)
+        });
+      }
 
       // Refresh recent chats to show the updated conversation
       await fetchRecentChats(false);
@@ -342,9 +354,10 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         content: 'Sorry, I encountered an error processing your message. Please try again.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      setIsThinking(false);
       setMessages(prevMessages => [...prevMessages, errorMessage]);
-      await addMessage(errorMessage);
+    } finally {
+      // Always turn off thinking state when done
+      setIsThinking(false);
     }
   };
 

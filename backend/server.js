@@ -121,40 +121,10 @@ app.post('/api/chat/process', async (req, res) => {
 
         console.log('AutoGen response:', autogenResponse.data);
 
-        // Create messages with timestamps
+        // Create timestamp for the response
         const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const newMessages = [
-            {
-                role: 'user',
-                content: message,
-                timestamp: timestamp || currentTime
-            },
-            {
-                role: 'assistant',
-                content: autogenResponse.data.content,
-                timestamp: currentTime
-            }
-        ];
 
-        let chat;
-        if (chatId) {
-            // Update existing chat
-            chat = await Chat.findById(chatId);
-            if (!chat) {
-                return res.status(404).json({ error: 'Chat not found' });
-            }
-            chat.messages.push(...newMessages);
-        } else {
-            // Create new chat if no chatId provided
-            chat = new Chat();
-            chat.messages = newMessages;
-        }
-
-        // Save the chat
-        const savedChat = await chat.save();
-        console.log('Chat saved successfully:', savedChat._id);
-
-        // Return AutoGen's response
+        // Return only the assistant's response
         res.json({
             response: autogenResponse.data.content,
             role: 'assistant',

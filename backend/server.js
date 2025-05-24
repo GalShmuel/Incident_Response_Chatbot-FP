@@ -105,7 +105,7 @@ app.post('/api/chats/:id/messages', async (req, res) => {
 // Process chat message with AutoGen
 app.post('/api/chat/process', async (req, res) => {
     try {
-        const { message, alertData, timestamp } = req.body;
+        const { message, alertData, timestamp, chatId } = req.body;
         
         if (!message) {
             return res.status(400).json({ error: 'Message is required' });
@@ -123,7 +123,7 @@ app.post('/api/chat/process', async (req, res) => {
 
         // Create messages with timestamps
         const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const messages = [
+        const newMessages = [
             {
                 role: 'user',
                 content: message,
@@ -136,11 +136,19 @@ app.post('/api/chat/process', async (req, res) => {
             }
         ];
 
-        // Create a new chat
-        const chat = new Chat();
-        chat.messages = messages;
-
-        console.log('Created chat object:', JSON.stringify(chat, null, 2));
+        let chat;
+        if (chatId) {
+            // Update existing chat
+            chat = await Chat.findById(chatId);
+            if (!chat) {
+                return res.status(404).json({ error: 'Chat not found' });
+            }
+            chat.messages.push(...newMessages);
+        } else {
+            // Create new chat if no chatId provided
+            chat = new Chat();
+            chat.messages = newMessages;
+        }
 
         // Save the chat
         const savedChat = await chat.save();

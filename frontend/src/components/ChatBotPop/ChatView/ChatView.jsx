@@ -190,10 +190,6 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
             role: 'user',
             content: `\`\`\`json\n${JSON.stringify(alert, null, 2)}\n\`\`\``,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }, {
-            role: 'bot',
-            content: "I see you've shared an alert with me. I'll help you understand it better. What would you like to know about this alert?",
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }]
         })
       });
@@ -313,7 +309,8 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         body: JSON.stringify({
           message: content,
           alertData: currentAlertData,
-          timestamp
+          timestamp,
+          chatId
         })
       });
 
@@ -332,6 +329,7 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
       // Add bot message and turn off thinking state
       setIsThinking(false);
+      // Preserve existing messages and append the new bot message
       setMessages(prevMessages => [...prevMessages, botMessage]);
       await addMessage(botMessage);
 

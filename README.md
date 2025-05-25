@@ -1,12 +1,12 @@
-# Incident Response Chatbot (Final Project)
+# Incident Response Chatbot (Final Project)- not finished.
 
 This project is a chatbot system designed to assist with cybersecurity incident response using AI.
 
 🌐 Features
--🔐 Real-time alert integration from Wazuh / GuardDuty
--🤖 AI Agents powered by AutoGen (e.g., Playbook Agent, Analyst Agent)
--📄 Automatic generation of incident response playbooks
--🧑‍💻 Interactive chatbot interface for cybersecurity professionals
+- 🔐 Real-time alert integration from Wazuh / GuardDuty
+- 🤖 AI Agents powered by AutoGen (e.g., Playbook Agent, Analyst Agent)
+- 📄 Automatic generation of incident response playbooks
+- 🧑‍💻 Interactive chatbot interface for cybersecurity professionals
 
 ## 🛠️ Technologies
 

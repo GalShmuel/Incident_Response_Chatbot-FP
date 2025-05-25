@@ -26,52 +26,52 @@ This project is a chatbot system designed to assist with cybersecurity incident 
 
 💻 Frontend Setup (React)
 Navigate to the frontend directory:
-``` bash
-cd ../frontend
-```
+  ``` bash
+  cd ../frontend
+  ```
 
 Install dependencies:
-```bash
-npm install
-```
+  ```bash
+  npm install
+  ```
 
 Run the frontend app:
-``` bash
-npm start
-```
+  ``` bash
+  npm start
+  ```
 
 Open http://localhost:3000 in your browser.
 
 **Navigate to the backend directory:**
-   ```bash
-   cd backend
-```
+     ```bash
+     cd backend
+    ```
 
 Create and activate a virtual environment:
-```
-bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+   ```
+   bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 Install Python dependencies:
-```
-bash
-pip install -r requirements.txt
-```
+  ```
+  bash
+  pip install -r requirements.txt
+  ```
 
 Set up environment variables (e.g., OpenAI , OpenRouter keys):
 
 Create a .env file: 
-```
-env
-OPENAI_API_KEY=your_openai_key_here
-```
+  ```
+  env
+  OPENAI_API_KEY=your_openai_key_here
+  ```
 
 Run the backend server:
-```
-bash
-python autogen_server.py 
-```
+  ```
+  bash
+  python autogen_server.py 
+  ```
 
 
 

@@ -4,6 +4,7 @@ import { IoPersonOutline } from "react-icons/io5";
 import { RiRobot2Line } from "react-icons/ri";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
+import { MdOutlineContentCopy } from "react-icons/md";
 import ChatInput from '../ChatInput/ChatInput';
 
 const API_URL = 'http://localhost:5000/api';
@@ -123,56 +124,108 @@ const formatJsonString = (content) => {
   }
 };
 
+function copyCode(codeId) {
+  const codeElement = document.getElementById(codeId);
+  if (!codeElement) return;
+
+  // Get the raw text content without HTML tags
+  const text = codeElement.innerText;
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Code copied to clipboard!');
+  }).catch(() => {
+    alert('Failed to copy code.');
+  });
+}
+
 const formatMessage = (content) => {
   if (typeof content !== 'string') return content;
 
-  // Handle code blocks with language specification
+  // Step 1: Handle code blocks with language specification
   if (content.includes('```')) {
-    // First handle JSON blocks
     if (content.includes('```json')) {
       return formatJsonString(content);
     }
     
-    // Handle other code blocks
-    content = content.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
-      return `<pre class="code-block ${lang || ''}"><code>${code.trim()}</code></pre>`;
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+
+    // We'll extract code blocks first and store them in an array
+    const codeBlocks = [];
+    content = content.replace(codeBlockRegex, (match, language, code) => {
+      const cleanCode = code.trim();
+      let displayedCode = cleanCode;
+
+      if (language === 'bash') {
+        displayedCode = cleanCode
+          .split('\n')
+          .map(line => `<span class="prompt">$</span> ${line}`)
+          .join('\n');
+      }
+
+      // Create unique id for this block
+      const codeId = `code-${Math.random().toString(36).substr(2, 9)}`;
+
+      const html = `
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-language-label">${language || 'code'}</span>
+            <button class="copy-button" data-code-id="${codeId}">
+              <svg class="copy-icon" viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+              </svg>
+            </button>
+          </div>
+          <pre id="${codeId}" class="code-block ${language ? `language-${language}` : ''}">${displayedCode}</pre>
+        </div>
+      `;
+
+      // Push HTML into array and replace with placeholder
+      codeBlocks.push(html);
+      return `[[[CODE_BLOCK_${codeBlocks.length - 1}]]]`;
     });
+
+    // Step 2: Format quotes in regular text
+    content = content.replace(/"([^"]+)"/g, '<code class="double-quote">$1</code>');
+    content = content.replace(/@@@([^@]+)@@@/g, '<code class="triple-at">$1</code>');
+    content = content.replace(/'([^']+)'/g, '<code class="single-quote">$1</code>');
+    
+    // Step 3: Fix malformed code blocks (if any)
+    content = content.replace(/"code-block language-(\w+)">([^<]+)/g, (match, language, code) => {
+      return `<pre class="code-block language-${language}">${code.trim()}</pre>`;
+    });
+
+    // Step 4: Format headings, bold, underline, color, severity level
+    content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>').replace(/(<h1>.*?<\/h1>)\n+/g, '$1');
+    content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>').replace(/(<h2>.*?<\/h2>)\n+/g, '$1');
+    content = content.replace(/^### (.*$)/gm, '<h3>$1</h3>').replace(/(<h3>.*?<\/h3>)\n+/g, '$1');
+    content = content.replace(/^#### (.*$)/gm, '<h4>$1</h4>').replace(/(<h4>.*?<\/h4>)\n+/g, '$1');
+    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    content = content.replace(/__(.*?)__/g, '<u>$1</u>');
+    content = content.replace(/\[color=(.*?)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>');
+    content = content.replace(/Severity Level: (Low|Medium|High|Critical)/g, '<strong class="severity-level">Severity Level: $1</strong>');
+
+    // Step 5: Replace \n with <br> **only outside code blocks**
+    content = content.replace(/\n/g, '<br>');
+
+    // Step 6: Restore the code blocks from placeholders
+    content = content.replace(/\[\[\[CODE_BLOCK_(\d+)\]\]\]/g, (match, index) => codeBlocks[index]);
+
+    return content;
   }
 
-  // Format headings (h1-h4) and remove extra newlines after them
+  // If no code block, just format normally (with line breaks)
+  content = content.replace(/"([^"]+)"/g, '<code class="double-quote">$1</code>');
+  content = content.replace(/@@@([^@]+)@@@/g, '<code class="triple-at">$1</code>');
+  content = content.replace(/'([^']+)'/g, '<code class="single-quote">$1</code>');
+  
   content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>').replace(/(<h1>.*?<\/h1>)\n+/g, '$1');
   content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>').replace(/(<h2>.*?<\/h2>)\n+/g, '$1');
   content = content.replace(/^### (.*$)/gm, '<h3>$1</h3>').replace(/(<h3>.*?<\/h3>)\n+/g, '$1');
   content = content.replace(/^#### (.*$)/gm, '<h4>$1</h4>').replace(/(<h4>.*?<\/h4>)\n+/g, '$1');
-
-  // Format bold text
   content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-  // Format underlined text
   content = content.replace(/__(.*?)__/g, '<u>$1</u>');
-
-  // Format colored text
   content = content.replace(/\[color=(.*?)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>');
-
-  // Format AWS access keys
-  content = content.replace(/(AKIA[A-Z0-9]{16})/g, '<code>$1</code>');
-  content = content.replace(/([A-Z0-9]{20})/g, (match) => {
-    if (/^[A-Z0-9]{20}$/.test(match)) {
-      return `${match}`;
-    }
-    return match;
-  });
-
-  // Format IP addresses (including any characters before and after)
-  content = content.replace(/([^\s<]*?)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})([^\s<]*)/g, '$1<code>$2</code>$3');
-
-  // Format double-quoted strings (including any characters before and after)
-  content = content.replace(/([^\s<]*?)"([^"]*)"([^\s<]*)/g, '$1<code class="double-quote">"$2"</code>$3');
-
-  // Format single-quoted strings (including any characters before and after)
-  content = content.replace(/([^\s<]*?)'([^']*)'([^\s<]*)/g, '$1<code class="single-quote">\'$2\'</code>$3');
-
-  // Convert line breaks to <br>
+  content = content.replace(/Severity Level: (Low|Medium|High|Critical)/g, '<strong class="severity-level">Severity Level: $1</strong>');
   content = content.replace(/\n/g, '<br>');
 
   return content;
@@ -188,6 +241,7 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
   const [deletingChatId, setDeletingChatId] = useState(null);
   const messagesEndRef = useRef(null);
   const [currentAlertData, setCurrentAlertData] = useState(null);
+  const [copiedCodeId, setCopiedCodeId] = useState(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -537,6 +591,51 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       setDeletingChatId(null);
     }
   };
+
+  // Add event listener for copy events
+  useEffect(() => {
+    const handleCopyClick = (event) => {
+      const button = event.target.closest('.copy-button');
+      if (!button) return;
+
+      const codeId = button.getAttribute('data-code-id');
+      if (!codeId) return;
+
+      const codeElement = document.getElementById(codeId);
+      if (!codeElement) return;
+
+      try {
+        // Get the raw text content without HTML tags
+        const text = codeElement.innerText.replace(/\$\s/g, ''); // Remove bash prompts
+        navigator.clipboard.writeText(text).then(() => {
+          // Update button text and class
+          const buttonText = button.querySelector('span');
+          if (buttonText) {
+            buttonText.textContent = 'Copied!';
+          }
+          button.classList.add('copied');
+          
+          // Reset after 2 seconds
+          setTimeout(() => {
+            if (buttonText) {
+              buttonText.textContent = 'Copy';
+            }
+            button.classList.remove('copied');
+          }, 2000);
+        });
+      } catch (err) {
+        console.error('Failed to copy code:', err);
+      }
+    };
+
+    // Add click event listener to the document
+    document.addEventListener('click', handleCopyClick);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('click', handleCopyClick);
+    };
+  }, [messages]); // Re-run when messages change
 
   return (
     <div className="ChatView">

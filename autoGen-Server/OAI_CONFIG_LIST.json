@@ -2,7 +2,7 @@
     {
         "model": "qwen/qwen3-235b-a22b:free",
         "base_url": "https://openrouter.ai/api/v1",
-        "api_key": "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",
+        "api_key": "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",
         "price": [0.01, 0.005]
     }
 ]

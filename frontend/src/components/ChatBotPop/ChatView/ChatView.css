@@ -581,142 +581,147 @@ li {
     line-height: 1.3;
     color: #374151;
     white-space: nowrap;
-  font-size: 0.8rem;
-  line-height: 1.3;
-  color: #374151;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .preview-message.bot {
-  color: #374151;
+    color: #374151;
 }
 
 .preview-message.user {
-  color: #66c0c5;
+    color: #66c0c5;
+}
+
+.preview-message.alert-title {
+    font-weight: 600;
+    color: #66c0c5;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(102, 192, 197, 0.2);
 }
 
 .new-chat-button {
-  margin-top: auto;
-  background: linear-gradient(135deg, #66c0c5 0%, #43a3a8 100%);
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  position: sticky;
-  bottom: 0;
-  box-shadow: 0 2px 4px rgba(67, 163, 168, 0.2);
-  overflow: hidden;
+    margin-top: auto;
+    background: linear-gradient(135deg, #66c0c5 0%, #43a3a8 100%);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    position: sticky;
+    bottom: 0;
+    box-shadow: 0 2px 4px rgba(67, 163, 168, 0.2);
+    overflow: hidden;
 }
 
 .new-chat-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #43a3a8 0%, #2a8a8f 100%);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  border-radius: 10px;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #43a3a8 0%, #2a8a8f 100%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 10px;
 }
 
 .new-chat-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(67, 163, 168, 0.3);
-  border-radius: 10px;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(67, 163, 168, 0.3);
+    border-radius: 10px;
 }
 
 .new-chat-button:hover::before {
-  opacity: 1;
+    opacity: 1;
 }
 
 .new-chat-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 4px rgba(67, 163, 168, 0.2);
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(67, 163, 168, 0.2);
 }
 
 .new-chat-button span {
-  position: relative;
-  z-index: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .new-chat-button svg {
-  width: 18px;
-  height: 18px;
-  position: relative;
-  z-index: 1;
-  transition: transform 0.2s ease;
+    width: 18px;
+    height: 18px;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease;
 }
 
 .new-chat-button:hover svg {
-  transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  color: #6b7280;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #6b7280;
 }
 
 .loading-spinner::after {
-  content: '';
-  width: 24px;
-  height: 24px;
-  border: 3px solid #66c0c5;
-  border-top: 3px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-left: 10px;
+    content: '';
+    width: 24px;
+    height: 24px;
+    border: 3px solid #66c0c5;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
 }
 
 .error-message {
-  background: #fee2e2;
-  border: 1px solid #ef4444;
-  color: #b91c1c;
-  padding: 16px;
-  border-radius: 8px;
-  text-align: center;
-  margin: 20px 0;
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #b91c1c;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    margin: 20px 0;
 }
 
 .retry-button {
-  background: #dc2626;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  margin-top: 12px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-top: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .retry-button:hover {
-  background: #b91c1c;
+    background: #b91c1c;
 }
 
 .no-chats-message {
-  text-align: center;
-  color: #6b7280;
-  padding: 20px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px dashed #e5e7eb;
+    text-align: center;
+    color: #6b7280;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px dashed #e5e7eb;
 }
 
 .chat-header {
@@ -803,20 +808,20 @@ li {
 }
 
 .message-text u {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 /* Ensure proper spacing between formatted elements */
 .message-text > * {
-  margin: 0.3rem 0;
+    margin: 0.3rem 0;
 }
 
 .message-text > *:first-child {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .message-text > *:last-child {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 /* Ensure proper color inheritance for user messages */
@@ -969,6 +974,7 @@ li {
 }
 
 .message.user .message-text code.single-quote {
+    color: #6ee7b7;
     background-color: rgba(110, 231, 183, 0.2);
 }
 
@@ -1010,8 +1016,6 @@ li {
     font-family: 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
     position: relative;
 }
-
-
 
 .message-text code.triple-at {
     color: #9d7fdb;
@@ -1106,16 +1110,15 @@ pre.code-block.language-bash {
     white-space: pre-wrap;     /* wrap lines */
     overflow-x: auto;
     line-height: 1.5;
-  }
-  
-  /* Optionally highlight the $ prompt differently */
-  pre.code-block.language-bash span.prompt {
+}
+
+/* Optionally highlight the $ prompt differently */
+pre.code-block.language-bash span.prompt {
     color: #9378f2; /* greenish prompt color */
     font-weight: bold;
-  }
-  
+}
 
-  .code-block-wrapper {
+.code-block-wrapper {
     position: relative;
     margin: 1em 0;
     font-family: 'Source Code Pro', monospace;
@@ -1124,39 +1127,38 @@ pre.code-block.language-bash {
     background: #1e1e1e;
     color: #d4d4d4;
     overflow: hidden;
-  }
-  
-  .code-header {
+}
+
+.code-header {
     display: flex;
     align-items: center;
     background: #2d2d2d;
     padding: 0.25em 0.75em;
     font-size: 0.85rem;
     user-select: none;
-  }
-  
-  .code-language-label {
+}
+
+.code-language-label {
     text-transform: uppercase;
     font-weight: 700;
     color: #9cdcfe;
-  }
-  
-  
-  pre.code-block {
+}
+
+pre.code-block {
     margin: 0;
     padding: 1em;
     white-space: pre-wrap;
     font-family: 'Source Code Pro', monospace;
     font-size: 0.9rem;
     line-height: 1.4;
-  }
-  
-  /* Optional: prompt styling for bash */
-  pre.code-block.language-bash span.prompt {
+}
+
+/* Optional: prompt styling for bash */
+pre.code-block.language-bash span.prompt {
     color: #6b34b2;
     font-weight: bold;
     font-size: 1.2rem;
     user-select: none;
     margin-right: 0.25em;
-  }
+}
   

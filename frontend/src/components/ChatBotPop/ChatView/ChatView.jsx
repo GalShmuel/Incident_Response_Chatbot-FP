@@ -187,7 +187,6 @@ const formatMessage = (content) => {
     // Step 2: Format quotes in regular text
     content = content.replace(/"([^"]+)"/g, '<code class="double-quote">$1</code>');
     content = content.replace(/@@@([^@]+)@@@/g, '<code class="triple-at">$1</code>');
-    content = content.replace(/'([^']+)'/g, '<code class="single-quote">$1</code>');
     
     // Step 3: Fix malformed code blocks (if any)
     content = content.replace(/"code-block language-(\w+)">([^<]+)/g, (match, language, code) => {
@@ -216,7 +215,6 @@ const formatMessage = (content) => {
   // If no code block, just format normally (with line breaks)
   content = content.replace(/"([^"]+)"/g, '<code class="double-quote">$1</code>');
   content = content.replace(/@@@([^@]+)@@@/g, '<code class="triple-at">$1</code>');
-  content = content.replace(/'([^']+)'/g, '<code class="single-quote">$1</code>');
   
   content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>').replace(/(<h1>.*?<\/h1>)\n+/g, '$1');
   content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>').replace(/(<h2>.*?<\/h2>)\n+/g, '$1');
@@ -258,8 +256,20 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setRecentChats(Array.isArray(data) ? data : []);
-      if (data.length === 0) {
+      
+      // Filter out chats that only contain bot messages
+      const filteredChats = Array.isArray(data) ? data.filter(chat => {
+        // Check if chat has messages
+        if (!chat.messages || chat.messages.length === 0) return false;
+        
+        // Check if there's at least one user message
+        return chat.messages.some(msg => msg.role === 'user');
+      }) : [];
+      
+      setRecentChats(filteredChats);
+      
+      // If no valid chats remain, initialize a new chat
+      if (filteredChats.length === 0) {
         initializeNewChat();
       }
     } catch (error) {
@@ -667,13 +677,51 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
                             {new Date(chat.updatedAt).toLocaleString()}
                           </div>
                           <div className="recent-chat-messages">
-                            {chat.messages && chat.messages.slice(-2).map((msg, idx) => (
-                              <div key={idx} className={`preview-message ${msg.role}`}>
-                                {msg.content && msg.content.length > 50 
-                                  ? msg.content.substring(0, 50) + '...' 
-                                  : msg.content}
-                              </div>
-                            ))}
+                            {chat.messages && chat.messages.length > 0 && (
+                              <>
+                                {/* Show alert title from first message if it exists */}
+                                {chat.messages[0].content && (
+                                  <div className="preview-message alert-title">
+                                    {(() => {
+                                      try {
+                                        // First try to find JSON data
+                                        const jsonMatch = chat.messages[0].content.match(/```json\n([\s\S]*?)\n```/);
+                                        if (jsonMatch) {
+                                          const alertData = JSON.parse(jsonMatch[1]);
+                                          // Try to get description from different possible fields
+                                          const description = alertData.description || 
+                                                           alertData.Description || 
+                                                           alertData.details?.description ||
+                                                           'Alert Analysis';
+                                          return description.length > 50 
+                                            ? description.substring(0, 50) + '...' 
+                                            : description;
+                                        }
+                                        
+                                        // If no JSON found, try to get the first line of the message
+                                        const firstLine = chat.messages[0].content.split('\n')[0];
+                                        if (firstLine && !firstLine.includes('```')) {
+                                          return firstLine.length > 50 
+                                            ? firstLine.substring(0, 50) + '...' 
+                                            : firstLine;
+                                        }
+                                      } catch (e) {
+                                        console.error('Error parsing alert data:', e);
+                                      }
+                                      return 'Alert Analysis';
+                                    })()}
+                                  </div>
+                                )}
+                                {/* Show last two messages */}
+                                {chat.messages.slice(-2).map((msg, idx) => (
+                                  <div key={idx} className={`preview-message ${msg.role}`}>
+                                    {msg.content && msg.content.length > 50 
+                                      ? msg.content.substring(0, 50) + '...' 
+                                      : msg.content}
+                                  </div>
+                                ))}
+                              </>
+                            )}
                           </div>
                         </div>
                         <button 

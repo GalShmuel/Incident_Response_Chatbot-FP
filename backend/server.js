@@ -146,11 +146,25 @@ app.post('/api/chat/process', async (req, res) => {
             throw new Error('AUTOGEN_URL environment variable is not set');
         }
 
-        // Forward message to AutoGen server
+        // Fetch chat history if chatId is provided
+        let chatHistory = [];
+        if (chatId) {
+            const chat = await Chat.findById(chatId);
+            if (chat) {
+                chatHistory = chat.messages.map(msg => ({
+                    role: msg.role,
+                    content: msg.content,
+                    timestamp: msg.timestamp
+                }));
+            }
+        }
+
+        // Forward message to AutoGen server with chat history
         console.log('Forwarding to AutoGen server:', process.env.AUTOGEN_URL);
         const autogenResponse = await axios.post(`${process.env.AUTOGEN_URL}/api/chat`, {
             message,
-            alertData
+            alertData,
+            chatHistory
         }).catch(error => {
             console.error('Error from AutoGen server:', {
                 status: error.response?.status,
@@ -162,19 +176,21 @@ app.post('/api/chat/process', async (req, res) => {
 
         console.log('AutoGen response:', autogenResponse.data);
 
-        if (!autogenResponse.data || !autogenResponse.data.content) {
+        // Check for error response
+        if (autogenResponse.data.error) {
+            throw new Error(autogenResponse.data.error);
+        }
+
+        // Validate response format - updated to match AutoGen server response format
+        if (!autogenResponse.data || !autogenResponse.data.response) {
             console.error('Invalid response from AutoGen server:', autogenResponse.data);
             throw new Error('Invalid response from AutoGen server');
         }
 
-        // Create timestamp for the response
-        const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        // Return only the assistant's response without saving to chat
-        // The frontend will handle saving the chat
+        // Return the response with timestamp
         res.json({
-            response: autogenResponse.data.content,
-            timestamp: currentTime
+            response: autogenResponse.data.response,
+            timestamp: autogenResponse.data.timestamp
         });
     } catch (error) {
         console.error('Error processing chat message:', error);

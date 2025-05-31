@@ -656,37 +656,49 @@ li {
     height: 20px;
 }
 
-/* Rich text formatting styles */
+/* Enhanced headline styling */
 .message-text h1 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin: 0.5rem 0;
-  color: inherit;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0.5rem 0 0.3rem;
+    color: #66c0c5;
+    border-bottom: 3px solid #66c0c5;
+    padding-bottom: 0.3rem;
 }
 
 .message-text h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0.5rem 0;
-  color: inherit;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0.4rem 0 0.2rem;
+    color: #43a3a8;
+    border-bottom: 2px solid #43a3a8;
+    padding-bottom: 0.2rem;
 }
 
 .message-text h3 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin: 0.5rem 0;
-  color: inherit;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0.3rem 0 0.2rem;
+    color: #2a8a8f;
+    border-bottom: 1px solid #2a8a8f;
+    padding-bottom: 0.2rem;
 }
 
 .message-text h4 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0.5rem 0;
-  color: inherit;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.3rem 0 0.2rem;
+    color: #1f6b6f;
+    border-bottom: 1px solid #1f6b6f;
+    padding-bottom: 0.1rem;
 }
 
 .message-text strong {
-  font-weight: 700;
+    font-weight: 700;
+    color: #2a8a8f;
+    padding: 0 2px;
+    border-radius: 3px;
+    background: rgba(42, 138, 143, 0.1);
 }
 
 .message-text u {
@@ -713,5 +725,140 @@ li {
 .message.user .message-text h4,
 .message.user .message-text strong,
 .message.user .message-text u {
-  color: white;
+    color: white;
+    border-bottom-color: white;
+    text-decoration-color: white;
+}
+
+.message.user .message-text strong {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.message.user .message-text p:has(> br:first-child)::before {
+    color: white;
+}
+
+/* List styling for alert analysis */
+.message-text ul {
+    margin: 0.2rem 0;
+    padding-left: 1.2rem;
+    list-style-type: none;
+}
+
+.message-text ul li {
+    margin: 0.1rem 0;
+    position: relative;
+    padding-left: 0.8rem;
+    line-height: 1.4;
+}
+
+.message-text ul li::before {
+    content: '•';
+    color: #66c0c5;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+/* Nested list styling */
+.message-text ul ul {
+    margin: 0.1rem 0;
+    padding-left: 1rem;
+}
+
+.message-text ul ul li {
+    margin: 0.1rem 0;
+    padding-left: 0.8rem;
+}
+
+.message-text ul ul li::before {
+    content: '◦';
+    color: #43a3a8;
+}
+
+/* Ensure proper spacing between formatted elements */
+.message-text > * {
+    margin: 0.2rem 0;
+}
+
+.message-text > *:first-child {
+    margin-top: 0;
+}
+
+.message-text > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Bullet point styling */
+.message-text p:has(> br:first-child) {
+    margin-top: 0.5rem;
+}
+
+.message-text p:has(> br:first-child)::before {
+    content: '•';
+    color: #66c0c5;
+    font-weight: bold;
+    margin-right: 0.5rem;
+    display: inline-block;
+}
+
+/* AWS Access Key and sensitive information styling */
+.message-text {
+    position: relative;
+}
+
+.message-text code {
+    font-family: 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
+    color: #000000;
+    padding: 0.2rem 0.4rem;
+    font-weight: 700;
+    font-size: 0.9em;
+}
+
+/* IP Address and String styling */
+.message-text code {
+    color: #000000;
+    padding: 0.2rem 0.4rem;
+    font-weight: 700;
+    font-size: 0.9em;
+}
+
+/* IP Address styling */
+.message-text code.ip-address {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+}
+
+/* Double-quoted string styling */
+.message-text code.double-quote {
+    color: #1e4789;
+    background-color: rgba(142, 145, 149, 0.1);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+}
+
+/* Single-quoted string styling */
+.message-text code.single-quote {
+    color: #10b981;
+    background-color: rgba(16, 185, 129, 0.1);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+}
+
+/* Ensure proper color inheritance for user messages */
+.message.user .message-text code.ip-address {
+    color: #fca5a5;
+    background-color: rgba(252, 165, 165, 0.2);
+}
+
+.message.user .message-text code.double-quote {
+    color: #93c5fd;
+    background-color: rgba(147, 197, 253, 0.2);
+}
+
+.message.user .message-text code.single-quote {
+    color: #6ee7b7;
+    background-color: rgba(110, 231, 183, 0.2);
 }

@@ -139,11 +139,11 @@ const formatMessage = (content) => {
     });
   }
 
-  // Format headings (h1-h4)
-  content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>');
-  content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>');
-  content = content.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-  content = content.replace(/^#### (.*$)/gm, '<h4>$1</h4>');
+  // Format headings (h1-h4) and remove extra newlines after them
+  content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>').replace(/(<h1>.*?<\/h1>)\n+/g, '$1');
+  content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>').replace(/(<h2>.*?<\/h2>)\n+/g, '$1');
+  content = content.replace(/^### (.*$)/gm, '<h3>$1</h3>').replace(/(<h3>.*?<\/h3>)\n+/g, '$1');
+  content = content.replace(/^#### (.*$)/gm, '<h4>$1</h4>').replace(/(<h4>.*?<\/h4>)\n+/g, '$1');
 
   // Format bold text
   content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -153,6 +153,24 @@ const formatMessage = (content) => {
 
   // Format colored text
   content = content.replace(/\[color=(.*?)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>');
+
+  // Format AWS access keys
+  content = content.replace(/(AKIA[A-Z0-9]{16})/g, '<code>$1</code>');
+  content = content.replace(/([A-Z0-9]{20})/g, (match) => {
+    if (/^[A-Z0-9]{20}$/.test(match)) {
+      return `${match}`;
+    }
+    return match;
+  });
+
+  // Format IP addresses (including any characters before and after)
+  content = content.replace(/([^\s<]*?)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})([^\s<]*)/g, '$1<code>$2</code>$3');
+
+  // Format double-quoted strings (including any characters before and after)
+  content = content.replace(/([^\s<]*?)"([^"]*)"([^\s<]*)/g, '$1<code class="double-quote">"$2"</code>$3');
+
+  // Format single-quoted strings (including any characters before and after)
+  content = content.replace(/([^\s<]*?)'([^']*)'([^\s<]*)/g, '$1<code class="single-quote">\'$2\'</code>$3');
 
   // Convert line breaks to <br>
   content = content.replace(/\n/g, '<br>');

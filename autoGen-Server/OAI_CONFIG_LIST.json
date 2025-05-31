@@ -1,8 +1,8 @@
 [
     {
-        "model": "qwen/qwen3-235b-a22b:free",
+        "model": "thudm/glm-z1-32b:free",
         "base_url": "https://openrouter.ai/api/v1",
-        "api_key": "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",
+        "api_key": "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",
         "price": [0.01, 0.005]
     }
 ]

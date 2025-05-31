@@ -21,7 +21,8 @@ if not OPENROUTER_API_KEY:
 # Store the last processed message to prevent duplicates
 last_processed = {
     'message': None,
-    'timestamp': None
+    'timestamp': None,
+    'alert_id': None  # Add alert_id to track unique alerts
 }
 
 def map_role(role):
@@ -53,26 +54,39 @@ def process_chat():
     try:
         data = request.json
         message = data.get('message')
-        alert_data = data.get('alertData')
+        alert_data = data.get('alertData', {})
         chat_history = data.get('chatHistory', [])
         timestamp = data.get('timestamp')
+        
+        # Extract alert ID if present in alert_data
+        alert_id = alert_data.get('id') if alert_data else None
 
         if not message:
             print("🔴 [Autogen] Error: Message is required")
             return jsonify({'error': 'Message is required'}), 400
 
-        # Check for duplicate message
-        if (last_processed['message'] == message and 
-            last_processed['timestamp'] == timestamp):
+        # Check for duplicate message with improved logic
+        is_duplicate = False
+        if alert_id:
+            # For alerts, check if we've processed this specific alert recently
+            is_duplicate = (last_processed['alert_id'] == alert_id and 
+                          last_processed['timestamp'] == timestamp)
+        else:
+            # For regular messages, check content and timestamp
+            is_duplicate = (last_processed['message'] == message and 
+                          last_processed['timestamp'] == timestamp)
+
+        if is_duplicate:
             print("🔵 [Autogen] Duplicate message detected, skipping processing")
-            return jsonify({
-                'response': "Duplicate message detected, skipping processing",
-                'timestamp': datetime.now().strftime('%I:%M %p')
-            })
+            # return jsonify({
+            #     'response': "Processing your request...",
+            #     'timestamp': datetime.now().strftime('%I:%M %p')
+            # })
 
         # Update last processed message
         last_processed['message'] = message
         last_processed['timestamp'] = timestamp
+        last_processed['alert_id'] = alert_id
 
         print(f"🔵 [Autogen] Received message: {message}")
         
@@ -100,8 +114,11 @@ def process_chat():
                     9. Consider the severity level of the alert in your response
                     10. Prioritize responses based on severity levels (Severe and Critical alerts require immediate attention)
                     
+                    IMPORTANT: If you need more information about an alert to provide a complete analysis, ask specific questions
+                    
                     Always maintain a professional and clear communication style.
-                    When discussing severity levels, use the exact labels provided above."""
+                    When discussing severity levels, use the exact labels provided above.
+                    When asking questions, be specific and focus on gathering information that will help in the analysis."""
                 }
             ]
         }

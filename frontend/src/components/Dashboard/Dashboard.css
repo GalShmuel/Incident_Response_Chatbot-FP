@@ -1,18 +1,45 @@
 .dashboard-header {
     display: flex;
     flex-direction: row;
-    align-items: left;
-    justify-content: left;  
+    align-items: center;
+    justify-content: space-between;  
     background-color: rgba(202, 218, 221, 0.303);
- 
+    padding: 0 20px;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
 }
+
 .dashboard-icon {
     font-size: 50px;
     color: #000;
-    justify-content: left;
-    margin-left: 10px;
-    margin-top: 17px;
+    margin-right: 10px;
+}
+
+.dashboard-tabs {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    color: #666;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+.tab-button.active {
+    background-color: #66c0c5;
+    color: white;
 }
 
 .dashboard-content {
@@ -20,6 +47,5 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    
-   
+    padding: 20px;
 }

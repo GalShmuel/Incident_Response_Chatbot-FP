@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import findings from '../../Data/findings.json'
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import findingsData from '../../Data/findings.json';
 import AlertCard from '../AlertCard/AlertCard';
 import AlertFilters from '../AlertFilters/AlertFilters';
 import './Alerts.css';
 
-const Alerts = ({ onAlertClick }) => {
+const Alerts = ({ onAlertClick, onFindingsChange }) => {
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [uniqueFindings, setUniqueFindings] = useState([]);
+  const prevSentFindings = useRef(null); // כדי לעקוב אם שלחנו את אותו מידע קודם
 
+  // סינון לפי רמות חומרה
+  const filterFindings = useCallback((findings, severities) => {
+    return findings.filter(finding =>
+      severities.length === 0 || severities.includes(finding.Severity)
+    );
+  }, []);
+
+  // ייחודיות לפי ID - רץ רק פעם אחת
   useEffect(() => {
-    // Create a Set to track seen IDs
     const seenIds = new Set();
-    // Filter out duplicates and add index to make keys unique
-    const unique = findings.filter(finding => {
+    const unique = findingsData.filter(finding => {
       if (seenIds.has(finding.Id)) {
         console.warn(`Duplicate finding ID found: ${finding.Id}`);
         return false;
@@ -23,9 +30,21 @@ const Alerts = ({ onAlertClick }) => {
     setUniqueFindings(unique);
   }, []);
 
-  const filteredFindings = uniqueFindings.filter(finding => 
-    selectedSeverities.length === 0 || selectedSeverities.includes(finding.Severity)
-  );
+  // עדכון הורה בממצאים מסוננים — רק אם הם באמת שונים מהקודמים
+  useEffect(() => {
+    if (onFindingsChange) {
+      const filtered = filterFindings(uniqueFindings, selectedSeverities);
+      const currentStr = JSON.stringify(filtered);
+      const prevStr = prevSentFindings.current;
+
+      if (currentStr !== prevStr) {
+        prevSentFindings.current = currentStr;
+        onFindingsChange(filtered);
+      }
+    }
+  }, [uniqueFindings, selectedSeverities, filterFindings, onFindingsChange]);
+
+  const filteredFindings = filterFindings(uniqueFindings, selectedSeverities);
 
   return (
     <div className="alerts-page">

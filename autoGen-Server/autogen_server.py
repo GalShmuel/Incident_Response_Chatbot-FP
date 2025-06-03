@@ -10,13 +10,13 @@ app = Flask(__name__)
 CORS(app)
 load_dotenv()  # Load environment variables from .env file
 
-# OpenRouter API configuration
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+# OpenAI API configuration
+OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Ensure the OpenRouter API key is loaded correctly
-if not OPENROUTER_API_KEY:
-    raise ValueError("OpenRouter API key is missing")
+# Ensure the OpenAI API key is loaded correctly
+if not OPENAI_API_KEY:
+    raise ValueError("OpenAI API key is missing")
 
 # Store the last processed message to prevent duplicates
 last_processed = {
@@ -26,7 +26,7 @@ last_processed = {
 }
 
 def map_role(role):
-    """Map frontend roles to OpenRouter API roles"""
+    """Map frontend roles to OpenAI API roles"""
     role_mapping = {
         'bot': 'assistant',
         'assistant': 'assistant',
@@ -90,7 +90,7 @@ def process_chat():
 
         print(f"🔵 [Autogen] Received message: {message}")
         
-        # Prepare the payload for OpenRouter API
+        # Prepare the payload for OpenAI API
         payload = {
             "model": "gpt-3.5-turbo",
             "messages": [
@@ -139,16 +139,16 @@ def process_chat():
         })
 
         headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
             "Content-Type": "application/json"
         }
 
-        print(f"🔵 [Autogen] Sending request to OpenRouter API")
+        print(f"🔵 [Autogen] Sending request to OpenAI API")
         
-        # Send request to OpenRouter API
-        response = requests.post(OPENROUTER_API_URL, json=payload, headers=headers)
+        # Send request to OpenAI API
+        response = requests.post(OPENAI_API_URL, json=payload, headers=headers)
 
-        print(f"🔵 [Autogen] OpenRouter API Response Status: {response.status_code}")
+        print(f"🔵 [Autogen] OpenAI API Response Status: {response.status_code}")
 
         if response.status_code == 200:
             try:
@@ -163,13 +163,13 @@ def process_chat():
             except json.JSONDecodeError as e:
                 print(f"🔴 [Autogen] JSON Parse Error: {str(e)}")
                 return jsonify({
-                    'error': 'Failed to parse OpenRouter API response',
+                    'error': 'Failed to parse OpenAI API response',
                     'details': str(e)
                 }), 500
         else:
-            print(f"🔴 [Autogen] Error from OpenRouter API: {response.text}")
+            print(f"🔴 [Autogen] Error from OpenAI API: {response.text}")
             return jsonify({
-                'error': 'Failed to get response from OpenRouter API',
+                'error': 'Failed to get response from OpenAI API',
                 'status_code': response.status_code,
                 'details': response.text
             }), 500

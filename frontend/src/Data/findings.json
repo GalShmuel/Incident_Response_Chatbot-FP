@@ -4360,8 +4360,6 @@
             "Type": "UnauthorizedAccess:EC2/TorClient",
             "UpdatedAt": "2024-01-30T08:22:01.328Z"
     },
-    {
-    "Findings": [
         {
             "AccountId": "673739003081",
             "Arn": "arn:aws:guardduty:us-east-1:673739003081:detector/30c633bd64f8b1397dc98204528c06b6/finding/a4c6acaacf984ece41cbe34fe51afb44",
@@ -4477,8 +4475,7 @@
             "Title": "The EC2 instance i-07b596cf81adb4f7c is communicating with a Tor entry node.",
             "Type": "UnauthorizedAccess:EC2/TorClient",
             "UpdatedAt": "2024-01-30T07:56:40.984Z"
-        }
-    ]
+        
     },
     {
             "AccountId": "673739003081",

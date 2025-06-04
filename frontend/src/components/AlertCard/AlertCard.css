@@ -1,127 +1,146 @@
 .alert-card {
-  background-color: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  min-height: 160px;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin: 8px 0;
   display: flex;
-  flex-direction: column;
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  height: 52px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
 .alert-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.alert-severity-indicator {
+  width: 10px;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 8px 2px 2px 8px;
+}
+
+.alert-card-content {
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+.alert-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 700px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.alert-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
   opacity: 0.9;
 }
 
-.severity-badge {
-  position: absolute;
-  top: -12px;
-  left: 16px;
-  padding: 4px 8px;
-  border-radius: 14px;
-  font-weight: 600;
-  font-size: 0.75rem;
-  background-color: white;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  z-index: 2;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.alert-card-header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  text-align: center;
-}
-
-.alert-card-header h3 {
-  font-size: 1rem;
+.alert-main h3 {
   margin: 0;
-  color: #1f2937;
-  line-height: 1.4;
-  font-weight: 600;
-  height: 45px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e293b;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.created-at {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: #62656a;
-  border-top: 1px solid #898b8f33;
-}
-
-.alert-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.description {
-  color: #4b5563;
-  line-height: 1.5;
-  font-size: 0.875rem;
-  margin-bottom: 16px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.alert-details {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   width: 100%;
 }
 
-.alert-details p {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #6b7280;
+.alert-meta {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.alert-details strong {
-  color: #374151;
-  font-weight: 600;
-  min-width: 60px;
+  align-items: center;
+  gap: 24px;
   flex-shrink: 0;
+  min-width: 300px;
+  justify-content: flex-end;
+  box-sizing: border-box;
 }
 
-/* Status indicators */
-.status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 8px;
-  display: inline-block;
+.severity-badge {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+  min-width: 32px;
+  text-align: center;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.meta-icon {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.alert-id {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  padding: 2px 6px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  min-width: 60px;
+  text-align: center;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .alert-card {
-    padding: 14px;
+    height: auto;
+    min-height: 52px;
   }
   
+  .alert-card-content {
+    flex-wrap: wrap;
+    padding: 8px 16px;
+    gap: 16px;
+  }
+  
+  .alert-meta {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 4px;
+    gap: 16px;
+    min-width: auto;
+  }
+
+  .meta-item {
+    font-size: 0.7rem;
+    min-width: auto;
+  }
+
   .severity-badge {
-    left: 12px;
+    font-size: 0.7rem;
+    min-width: 70px;
+  }
+
+  .alert-id {
+    min-width: 50px;
   }
 }
-

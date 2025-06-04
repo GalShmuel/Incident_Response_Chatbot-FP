@@ -92,7 +92,7 @@ def process_chat():
         
         # Prepare the payload for OpenAI API
         payload = {
-            "model": "gpt-3.5-turbo",
+            "model": "gpt-4.1-mini-2025-04-14",
             "messages": [
                 {
                     "role": "system",

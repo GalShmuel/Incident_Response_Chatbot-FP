@@ -85,7 +85,6 @@ const Alerts = ({ onAlertClick, onFindingsChange }) => {
           <AlertCard 
             key={`${finding.Id}-${index}`} 
             finding={finding}
-            onAlertClick={onAlertClick}
           />
         ))}
         {filteredFindings.length === 0 && (

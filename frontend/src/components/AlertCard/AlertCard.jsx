@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './AlertCard.css';
 import { FaExclamationTriangle, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 
@@ -58,27 +58,66 @@ const formatDate = (dateString) => {
 };
 
 const AlertCard = ({ finding, onStatusChange }) => {
-  const severityColor = getSeverityColor(finding.Severity);
-  const severityLabel = getSeverityLabel(finding.Severity);
-  const status = finding.Status || 'open'; // Default to 'open' if status not set
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(finding.Status);
+  const [isResolving, setIsResolving] = useState(false);
 
-  const handleStatusClick = (e) => {
-    e.stopPropagation(); // Prevent card click event
-    if (onStatusChange) {
-      onStatusChange(finding.Id, status === 'open' ? 'resolved' : 'open');
+  const handleStatusClick = () => {
+    if (isAnimating) return;
+    
+    setIsAnimating(true);
+    const newStatus = currentStatus === 'open' ? 'resolved' : 'open';
+    
+    // Start both status icon and card animations immediately
+    const statusIcon = document.querySelector(`#status-${finding.Id}`);
+    if (statusIcon) {
+      statusIcon.classList.add('exiting');
     }
+
+    // If resolving, start the card fade out immediately
+    if (newStatus === 'resolved') {
+      setIsResolving(true);
+    }
+
+    // Update status after a short delay
+    setTimeout(() => {
+      setCurrentStatus(newStatus);
+      onStatusChange(finding.Id, newStatus);
+      
+      if (statusIcon) {
+        statusIcon.classList.remove('exiting');
+        statusIcon.classList.add('entering');
+      }
+
+      // Remove animation classes after animation completes
+      setTimeout(() => {
+        if (statusIcon) {
+          statusIcon.classList.remove('entering');
+        }
+        setIsAnimating(false);
+      }, 300);
+    }, 300);
   };
 
+  const severityColor = getSeverityColor(finding.Severity);
+  const severityLabel = getSeverityLabel(finding.Severity);
+
   return (
-    <div className="alert-card">
+    <div className={`alert-card ${isResolving ? 'resolving' : ''}`}>
       <div className="alert-severity-indicator" style={{ backgroundColor: severityColor }} />
       <div className="alert-card-content">
         <div className="alert-main">
           <div className="alert-status" onClick={handleStatusClick}>
-            {status === 'resolved' ? (
-              <FaCheckCircle className="status-icon resolved" />
+            {currentStatus === 'open' ? (
+              <FaExclamationCircle 
+                id={`status-${finding.Id}`}
+                className={`status-icon ${currentStatus}`}
+              />
             ) : (
-              <FaExclamationCircle className="status-icon open" />
+              <FaCheckCircle 
+                id={`status-${finding.Id}`}
+                className={`status-icon ${currentStatus}`}
+              />
             )}
           </div>
           <FaExclamationTriangle 

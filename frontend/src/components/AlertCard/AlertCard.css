@@ -8,12 +8,27 @@
   height: 52px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  transition: box-shadow 0.2s ease;
+  transition: all 0.3s ease;
   box-sizing: border-box;
 }
 
 .alert-card:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.alert-card.resolving {
+  animation: resolveAlert 0.5s ease-out forwards;
+}
+
+@keyframes resolveAlert {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px) scale(0.95);
+  }
 }
 
 .alert-severity-indicator {
@@ -52,8 +67,9 @@
   height: 32px;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   flex-shrink: 0;
+  position: relative;
 }
 
 .alert-status:hover {
@@ -62,7 +78,14 @@
 
 .status-icon {
   font-size: 1.2rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: absolute;
+  opacity: 1;
+  width: 1.2rem;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .status-icon.open {
@@ -71,6 +94,37 @@
 
 .status-icon.resolved {
   color: #22c55e;
+}
+
+/* Animation classes */
+.status-icon.entering {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.status-icon.exiting {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) rotate(-45deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8) rotate(45deg);
+  }
 }
 
 .alert-icon {

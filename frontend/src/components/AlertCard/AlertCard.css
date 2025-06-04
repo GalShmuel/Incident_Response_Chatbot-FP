@@ -44,6 +44,35 @@
   box-sizing: border-box;
 }
 
+.alert-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.alert-status:hover {
+  transform: scale(1.1);
+}
+
+.status-icon {
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.status-icon.open {
+  color: #ef4444;
+}
+
+.status-icon.resolved {
+  color: #22c55e;
+}
+
 .alert-icon {
   font-size: 1rem;
   flex-shrink: 0;
@@ -142,5 +171,14 @@
 
   .alert-id {
     min-width: 50px;
+  }
+
+  .alert-status {
+    width: 28px;
+    height: 28px;
+  }
+
+  .status-icon {
+    font-size: 1rem;
   }
 }

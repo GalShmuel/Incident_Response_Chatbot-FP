@@ -7,16 +7,38 @@ import './Alerts.css';
 const Alerts = ({ onAlertClick, onFindingsChange }) => {
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [uniqueFindings, setUniqueFindings] = useState([]);
-  const prevSentFindings = useRef(null); // כדי לעקוב אם שלחנו את אותו מידע קודם
+  const [activeSection, setActiveSection] = useState('open'); // 'open' or 'resolved'
+  const prevSentFindings = useRef(null);
 
-  // סינון לפי רמות חומרה
+  // Add status to findings if not present
+  const addStatusToFindings = useCallback((findings) => {
+    return findings.map(finding => ({
+      ...finding,
+      Status: finding.Status || 'open' // Default to 'open' if status not set
+    }));
+  }, []);
+
+  // Handle status change
+  const handleStatusChange = useCallback((findingId, newStatus) => {
+    setUniqueFindings(prevFindings => 
+      prevFindings.map(finding => 
+        finding.Id === findingId 
+          ? { ...finding, Status: newStatus }
+          : finding
+      )
+    );
+  }, []);
+
+  // Filter findings by severity and status
   const filterFindings = useCallback((findings, severities) => {
     // Handle both direct findings array and nested Findings structure
     const findingsArray = Array.isArray(findings) ? findings : 
                          (findings.Findings || []);
     
-    // First ensure we have unique findings by ID
-    const uniqueById = Array.from(new Map(findingsArray.map(finding => [finding.Id, finding])).values());
+    // First ensure we have unique findings by ID and add status
+    const uniqueById = Array.from(new Map(
+      addStatusToFindings(findingsArray).map(finding => [finding.Id, finding])
+    ).values());
     
     return uniqueById
       .filter(finding =>
@@ -37,16 +59,16 @@ const Alerts = ({ onAlertClick, onFindingsChange }) => {
         const dateB = new Date(b.CreatedAt).getTime();
         return dateB - dateA;
       });
-  }, []);
+  }, [addStatusToFindings]);
 
-  // ייחודיות לפי ID - רץ רק פעם אחת
+  // Initialize unique findings with status
   useEffect(() => {
     // Handle both direct findings array and nested Findings structure
     const findingsArray = Array.isArray(findingsData) ? findingsData : 
                          (findingsData.Findings || []);
     
     const seenIds = new Set();
-    const unique = findingsArray.filter(finding => {
+    const unique = addStatusToFindings(findingsArray).filter(finding => {
       if (seenIds.has(finding.Id)) {
         console.warn(`Duplicate finding ID found: ${finding.Id}`);
         return false;
@@ -55,9 +77,9 @@ const Alerts = ({ onAlertClick, onFindingsChange }) => {
       return true;
     });
     setUniqueFindings(unique);
-  }, []);
+  }, [addStatusToFindings]);
 
-  // עדכון הורה בממצאים מסוננים — רק אם הם באמת שונים מהקודמים
+  // Update parent with filtered findings
   useEffect(() => {
     if (onFindingsChange) {
       const filtered = filterFindings(uniqueFindings, selectedSeverities);
@@ -72,6 +94,10 @@ const Alerts = ({ onAlertClick, onFindingsChange }) => {
   }, [uniqueFindings, selectedSeverities, filterFindings, onFindingsChange]);
 
   const filteredFindings = filterFindings(uniqueFindings, selectedSeverities);
+  
+  // Group findings by status
+  const openFindings = filteredFindings.filter(finding => finding.Status === 'open');
+  const resolvedFindings = filteredFindings.filter(finding => finding.Status === 'resolved');
 
   return (
     <div className="alerts-page">
@@ -81,19 +107,56 @@ const Alerts = ({ onAlertClick, onFindingsChange }) => {
         findings={uniqueFindings}
       />
       <div className="alerts-container">
-        {filteredFindings.map((finding, index) => (
-          <AlertCard 
-            key={`${finding.Id}-${index}`} 
-            finding={finding}
-          />
-        ))}
-        {filteredFindings.length === 0 && (
-          <div className="no-results">
-            {selectedSeverities.length > 0 
-              ? "No alerts found for the selected severity levels"
-              : "No alerts found"}
+        <div className="alerts-sections">
+          <div 
+            className={`section-header ${activeSection === 'open' ? 'active' : ''}`}
+            onClick={() => setActiveSection('open')}
+          >
+            <h3>Open Alerts</h3>
+            <span className="section-count">{openFindings.length}</span>
           </div>
-        )}
+          <div 
+            className={`section-header ${activeSection === 'resolved' ? 'active' : ''}`}
+            onClick={() => setActiveSection('resolved')}
+          >
+            <h3>Resolved Alerts</h3>
+            <span className="section-count">{resolvedFindings.length}</span>
+          </div>
+        </div>
+
+        <div className="alerts-content">
+          {activeSection === 'open' && (
+            <div className="alerts-list">
+              {openFindings.length > 0 ? (
+                openFindings.map((finding, index) => (
+                  <AlertCard 
+                    key={`${finding.Id}-${index}`} 
+                    finding={finding}
+                    onStatusChange={handleStatusChange}
+                  />
+                ))
+              ) : (
+                <div className="no-results">No open alerts found</div>
+              )}
+            </div>
+          )}
+
+          {activeSection === 'resolved' && (
+            <div className="alerts-list">
+              {resolvedFindings.length > 0 ? (
+                resolvedFindings.map((finding, index) => (
+                  <AlertCard 
+                    key={`${finding.Id}-${index}`} 
+                    finding={finding}
+                    onStatusChange={handleStatusChange}
+                  />
+                ))
+              ) : (
+                <div className="no-results">No resolved alerts found</div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

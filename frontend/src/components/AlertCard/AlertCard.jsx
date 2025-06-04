@@ -1,6 +1,6 @@
 import React from 'react';
 import './AlertCard.css';
-import { FaExclamationTriangle, FaClock } from 'react-icons/fa';
+import { FaExclamationTriangle, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 
 const getSeverityColor = (severity) => {
   switch (severity) {
@@ -57,15 +57,30 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString();
 };
 
-const AlertCard = ({ finding }) => {
+const AlertCard = ({ finding, onStatusChange }) => {
   const severityColor = getSeverityColor(finding.Severity);
   const severityLabel = getSeverityLabel(finding.Severity);
+  const status = finding.Status || 'open'; // Default to 'open' if status not set
+
+  const handleStatusClick = (e) => {
+    e.stopPropagation(); // Prevent card click event
+    if (onStatusChange) {
+      onStatusChange(finding.Id, status === 'open' ? 'resolved' : 'open');
+    }
+  };
 
   return (
     <div className="alert-card">
       <div className="alert-severity-indicator" style={{ backgroundColor: severityColor }} />
       <div className="alert-card-content">
         <div className="alert-main">
+          <div className="alert-status" onClick={handleStatusClick}>
+            {status === 'resolved' ? (
+              <FaCheckCircle className="status-icon resolved" />
+            ) : (
+              <FaExclamationCircle className="status-icon open" />
+            )}
+          </div>
           <FaExclamationTriangle 
             className="alert-icon"
             style={{ color: severityColor }}

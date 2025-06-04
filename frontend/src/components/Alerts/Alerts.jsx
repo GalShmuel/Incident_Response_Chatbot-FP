@@ -4,11 +4,28 @@ import AlertCard from '../AlertCard/AlertCard';
 import AlertFilters from '../AlertFilters/AlertFilters';
 import './Alerts.css';
 
-const Alerts = ({ onAlertClick, onFindingsChange }) => {
+const Alerts = ({ onFindingsChange }) => {
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('open');
   const [uniqueFindings, setUniqueFindings] = useState([]);
   const prevSentFindings = useRef(null);
+
+  // Load saved alert states from localStorage on component mount
+  useEffect(() => {
+    const savedAlertStates = localStorage.getItem('alertStates');
+    if (savedAlertStates) {
+      const parsedStates = JSON.parse(savedAlertStates);
+      // Initialize findings with saved states
+      const findingsWithSavedStates = findingsData.map(finding => ({
+        ...finding,
+        Status: parsedStates[finding.Id] || finding.Status || 'open'
+      }));
+      setUniqueFindings(findingsWithSavedStates);
+    } else {
+      // Initialize with default states if no saved states exist
+      setUniqueFindings(addStatusToFindings(findingsData));
+    }
+  }, []);
 
   // Add status to findings if not present
   const addStatusToFindings = useCallback((findings) => {
@@ -18,15 +35,24 @@ const Alerts = ({ onAlertClick, onFindingsChange }) => {
     }));
   }, []);
 
-  // Handle status change
+  // Handle status change and save to localStorage
   const handleStatusChange = useCallback((findingId, newStatus) => {
-    setUniqueFindings(prevFindings => 
-      prevFindings.map(finding => 
+    setUniqueFindings(prevFindings => {
+      const updatedFindings = prevFindings.map(finding => 
         finding.Id === findingId 
           ? { ...finding, Status: newStatus }
           : finding
-      )
-    );
+      );
+      
+      // Save updated states to localStorage
+      const alertStates = updatedFindings.reduce((acc, finding) => {
+        acc[finding.Id] = finding.Status;
+        return acc;
+      }, {});
+      localStorage.setItem('alertStates', JSON.stringify(alertStates));
+      
+      return updatedFindings;
+    });
   }, []);
 
   // Filter findings by severity and status
@@ -56,24 +82,6 @@ const Alerts = ({ onAlertClick, onFindingsChange }) => {
         return dateB - dateA;
       });
   }, [addStatusToFindings, selectedStatus]);
-
-  // Initialize unique findings with status
-  useEffect(() => {
-    // Handle both direct findings array and nested Findings structure
-    const findingsArray = Array.isArray(findingsData) ? findingsData : 
-                         (findingsData.Findings || []);
-    
-    const seenIds = new Set();
-    const unique = addStatusToFindings(findingsArray).filter(finding => {
-      if (seenIds.has(finding.Id)) {
-        console.warn(`Duplicate finding ID found: ${finding.Id}`);
-        return false;
-      }
-      seenIds.add(finding.Id);
-      return true;
-    });
-    setUniqueFindings(unique);
-  }, [addStatusToFindings]);
 
   // עדכון הורה בממצאים מסוננים — רק אם הם באמת שונים מהקודמים
   useEffect(() => {

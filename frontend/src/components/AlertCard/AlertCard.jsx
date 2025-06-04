@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './AlertCard.css';
-import { FaExclamationTriangle, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaExclamationTriangle, FaClock, FaCheckCircle, FaExclamationCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import AlertDetails from './AlertDetails';
 
 const getSeverityColor = (severity) => {
   switch (severity) {
@@ -41,7 +43,7 @@ const hexToRGBA = (hex, alpha = 0.2) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const formatDate = (dateString) => {
+export const formatDate = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffTime = Math.abs(now - date);
@@ -61,8 +63,20 @@ const AlertCard = ({ finding, onStatusChange }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(finding.Status);
   const [isResolving, setIsResolving] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const statusRef = React.useRef(null);
 
-  const handleStatusClick = () => {
+  const handleMouseEnter = (e) => {
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
+  const handleStatusClick = (e) => {
+    e.stopPropagation(); // Prevent card click when clicking status
     if (isAnimating) return;
     
     setIsAnimating(true);
@@ -99,52 +113,92 @@ const AlertCard = ({ finding, onStatusChange }) => {
     }, 300);
   };
 
+  const handleCardClick = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   const severityColor = getSeverityColor(finding.Severity);
   const severityLabel = getSeverityLabel(finding.Severity);
 
   return (
-    <div className={`alert-card ${isResolving ? 'resolving' : ''}`}>
-      <div className="alert-severity-indicator" style={{ backgroundColor: severityColor }} />
-      <div className="alert-card-content">
-        <div className="alert-main">
-          <div className="alert-status" onClick={handleStatusClick}>
-            {currentStatus === 'open' ? (
-              <FaExclamationCircle 
-                id={`status-${finding.Id}`}
-                className={`status-icon ${currentStatus}`}
+    <>
+      <div className="alert-card-wrapper">
+        <div 
+          className={`alert-card ${isResolving ? 'resolving' : ''}`}
+          onClick={handleCardClick}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className="alert-severity-indicator" style={{ backgroundColor: severityColor }} />
+          <div className="alert-card-content">
+            <div className="alert-main">
+              <div 
+                ref={statusRef}
+                className="alert-status" 
+                onClick={handleStatusClick}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                {currentStatus === 'open' ? (
+                  <FaExclamationCircle 
+                    id={`status-${finding.Id}`}
+                    className={`status-icon ${currentStatus}`}
+                  />
+                ) : (
+                  <FaCheckCircle 
+                    id={`status-${finding.Id}`}
+                    className={`status-icon ${currentStatus}`}
+                  />
+                )}
+              </div>
+              <FaExclamationTriangle 
+                className="alert-icon"
+                style={{ color: severityColor }}
               />
-            ) : (
-              <FaCheckCircle 
-                id={`status-${finding.Id}`}
-                className={`status-icon ${currentStatus}`}
-              />
-            )}
+              <h3>{finding.Title}</h3>
+            </div>
+            <div className="alert-meta">
+              <div 
+                className="severity-badge"
+                style={{ 
+                  backgroundColor: hexToRGBA(severityColor, 0.15),
+                  color: severityColor,
+                  borderColor: severityColor
+                }}
+              >
+                {severityLabel}
+              </div>
+              <div className="meta-item">
+                <FaClock className="meta-icon" />
+                <span>{formatDate(finding.CreatedAt)}</span>
+              </div>
+              <div className="alert-id">#{finding.Id}</div>
+              <div className="expand-icon">
+                {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+              </div>
+            </div>
           </div>
-          <FaExclamationTriangle 
-            className="alert-icon"
-            style={{ color: severityColor }}
-          />
-          <h3>{finding.Title}</h3>
         </div>
-        <div className="alert-meta">
-          <div 
-            className="severity-badge"
-            style={{ 
-              backgroundColor: hexToRGBA(severityColor, 0.15),
-              color: severityColor,
-              borderColor: severityColor
-            }}
-          >
-            {severityLabel}
+        {isExpanded && (
+          <div className="alert-details">
+            <AlertDetails finding={finding} />
           </div>
-          <div className="meta-item">
-            <FaClock className="meta-icon" />
-            <span>{formatDate(finding.CreatedAt)}</span>
-          </div>
-          <div className="alert-id">#{finding.Id}</div>
-        </div>
+        )}
       </div>
-    </div>
+      {showTooltip && createPortal(
+        <div 
+          className="status-tooltip"
+          style={{
+            position: 'fixed',
+            top: statusRef.current ? statusRef.current.getBoundingClientRect().bottom + 10 : 0,
+            left: statusRef.current ? statusRef.current.getBoundingClientRect().left + (statusRef.current.offsetWidth / 2) : 0,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          Click to {currentStatus === 'open' ? 'resolve' : 'reopen'} alert
+        </div>,
+        document.body
+      )}
+    </>
   );
 };
 

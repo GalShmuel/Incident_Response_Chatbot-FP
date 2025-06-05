@@ -160,7 +160,7 @@ app.post('/api/chat/process', async (req, res) => {
         }
 
         // Forward message to AutoGen server with chat history
-        console.log('Forwarding to AutoGen server:', process.env.AUTOGEN_URL);
+        console.log('1Forwarding to AutoGen server:', process.env.AUTOGEN_URL);
         const autogenResponse = await axios.post(`${process.env.AUTOGEN_URL}/api/chat`, {
             message,
             alertData,

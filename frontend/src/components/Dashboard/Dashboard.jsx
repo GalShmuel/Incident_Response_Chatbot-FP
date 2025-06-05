@@ -24,7 +24,7 @@ const Dashboard = () => {
         <div className="dashboard">
             <div className="dashboard-header">
                 <GiMonoWheelRobot className="dashboard-icon"/>
-                <h1>Alerts Dashboard</h1>
+                <h1>Alerts G&R</h1>
                 <div className="dashboard-tabs">
                     <button 
                         className={`tab-button ${activeTab === 'alerts' ? 'active' : ''}`}
@@ -36,11 +36,15 @@ const Dashboard = () => {
                         className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
                         onClick={() => setActiveTab('graphs')}
                     >
-                        Graphs
+                        Dashboard
                     </button>
                 </div>
             </div>
             <div className="dashboard-content">
+                <p>
+                    Here you can see Open alerts and Resolve alerts,<br/> 
+                    Click on an alert to see more details about it <br/> Or chat with our Chatbot!
+                </p>
                 {activeTab === 'alerts' ? (
                     <Alerts 
                         onAlertClick={handleAlertClick}

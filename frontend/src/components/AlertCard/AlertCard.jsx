@@ -59,7 +59,7 @@ export const formatDate = (dateString) => {
   return date.toLocaleDateString();
 };
 
-const AlertCard = ({ finding, onStatusChange }) => {
+const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(finding.Status);
   const [isResolving, setIsResolving] = useState(false);
@@ -180,7 +180,7 @@ const AlertCard = ({ finding, onStatusChange }) => {
         </div>
         {isExpanded && (
           <div className="alert-details">
-            <AlertDetails finding={finding} />
+            <AlertDetails finding={finding} onChatOpen={onChatOpen} />
           </div>
         )}
       </div>

@@ -302,14 +302,10 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
     try {
       console.log('Initializing chat with alert:', alert);
       
-      // Format the alert data as a JSON string for better readability
-      const formattedAlert = `\`\`\`json\n${JSON.stringify(alert, null, 2)}\n\`\`\``;
-      console.log('Formatted alert:', formattedAlert);
-      
-      // Create initial user message with the alert
+      // Create initial user message with the simplified display data
       const userMessage = {
         role: 'user',
-        content: formattedAlert,
+        content: `I want to discuss alert ${alert.displayData.id}: ${alert.displayData.title}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
@@ -346,8 +342,8 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: formattedAlert,
-          alertData: alert,
+          message: userMessage.content,
+          alertData: alert.fullData,  // Send the full alert data
           timestamp: userMessage.timestamp,
           chatId: data._id
         })
@@ -540,16 +536,18 @@ const ChatView = ({ showRecentChats, setShowRecentChats, alertData }) => {
       // Add bot message to UI
       setMessages(prevMessages => [...prevMessages, botMessage]);
 
-      // Save both messages to backend
-      const messagesToSave = [userMessage, botMessage];
-      for (const message of messagesToSave) {
-        await fetch(`${API_URL}/chats/${chatId}/messages`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(message)
-        });
+      // Save both messages to backend in a single request
+      const saveResponse = await fetch(`${API_URL}/chats/${chatId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([userMessage, botMessage])
+      });
+
+      if (!saveResponse.ok) {
+        const errorText = await saveResponse.text();
+        console.warn('Failed to save messages:', errorText);
       }
 
       // Refresh recent chats to show the updated conversation

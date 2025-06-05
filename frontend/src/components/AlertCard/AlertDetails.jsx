@@ -20,13 +20,39 @@ const DetailItem = ({ label, value, wide }) => {
   );
 };
 
-const AlertDetails = ({ finding }) => {
+const AlertDetails = ({ finding, onChatOpen }) => {
   // Check if there's any user or access information to display
   const hasUserInfo = hasValue(finding.Resource?.AccessKeyDetails) || 
                      hasValue(finding.Service?.Action?.AwsApiCallAction?.RemoteIpDetails);
 
+  const handleChatOpen = () => {
+    // Send the full alert data but display a simplified version
+    const displayMessage = `I want to discuss alert ${finding.Id}: ${finding.Title}`;
+    onChatOpen({
+      fullData: finding,  // Send the complete alert data
+      displayData: {      // Simplified version for display
+        id: finding.Id,
+        title: finding.Title,
+        description: finding.Description,
+        severity: finding.Severity,
+        type: finding.Type,
+        createdAt: finding.CreatedAt,
+        status: finding.Status
+      }
+    });
+  };
+
   return (
     <div className="details-content">
+      <div className="details-header">
+        <button 
+          className="chat-button"
+          onClick={handleChatOpen}
+        >
+          Chat about this alert
+        </button>
+      </div>
+
       <div className="details-section">
         <h4>Description</h4>
         <p>{finding.Description || 'No description available'}</p>

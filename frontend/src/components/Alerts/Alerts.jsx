@@ -4,7 +4,7 @@ import AlertCard from '../AlertCard/AlertCard';
 import AlertFilters from '../AlertFilters/AlertFilters';
 import './Alerts.css';
 
-const Alerts = ({ onFindingsChange }) => {
+const Alerts = ({ onFindingsChange, onAlertClick }) => {
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('open');
   const [uniqueFindings, setUniqueFindings] = useState([]);
@@ -135,6 +135,7 @@ const Alerts = ({ onFindingsChange }) => {
               key={`${finding.Id}-${index}`} 
               finding={finding}
               onStatusChange={handleStatusChange}
+              onChatOpen={onAlertClick}
             />
           ))}
           {filteredFindings.length === 0 && (

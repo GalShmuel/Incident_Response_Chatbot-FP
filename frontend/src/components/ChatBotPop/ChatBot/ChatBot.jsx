@@ -3,7 +3,7 @@ import './ChatBot.css';
 import { VscRobot } from "react-icons/vsc";
 import { FaTimes } from 'react-icons/fa';
 import { MdHistory } from "react-icons/md";
-import ChatView from '../ChatView/ChatView';
+import ChatViewFinal from '../ChatView/ChatViewFinal';
 
 const ChatBot = ({ isOpen, setIsOpen, alertData }) => {
   const [showRecentChats, setShowRecentChats] = useState(false);
@@ -116,7 +116,7 @@ const ChatBot = ({ isOpen, setIsOpen, alertData }) => {
               </button>
             </div>
           </div>
-          <ChatView 
+          <ChatViewFinal
             showRecentChats={showRecentChats} 
             setShowRecentChats={setShowRecentChats}
             alertData={alertData}

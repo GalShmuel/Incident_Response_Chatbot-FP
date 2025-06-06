@@ -2,10 +2,10 @@
   "name": "chat-backend",
   "version": "1.0.0",
   "description": "Backend server for chat functionality",
-  "main": "server.js",
+  "main": "serverChat.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node serverChat.js",
+    "dev": "nodemon serverChat.js",
     "test": "mocha test/**/*.test.js --timeout 10000"
   },
   "dependencies": {

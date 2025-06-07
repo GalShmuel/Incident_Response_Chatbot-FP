@@ -61,7 +61,7 @@ export const formatDate = (dateString) => {
 
 const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(finding.Status);
+  const [currentStatus, setCurrentStatus] = useState(finding.Service?.Archived ? 'resolved' : 'open');
   const [isResolving, setIsResolving] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -96,7 +96,7 @@ const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
     // Update status after a short delay
     setTimeout(() => {
       setCurrentStatus(newStatus);
-      onStatusChange(finding.Id, newStatus);
+      onStatusChange(finding.Id, newStatus === 'resolved' ? 'closed' : 'open');
       
       if (statusIcon) {
         statusIcon.classList.remove('exiting');
@@ -109,6 +109,7 @@ const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
           statusIcon.classList.remove('entering');
         }
         setIsAnimating(false);
+        setIsResolving(false); // Reset resolving state
       }, 300);
     }, 300);
   };
@@ -154,7 +155,7 @@ const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
                 className="alert-icon"
                 style={{ color: severityColor }}
               />
-              <h3>{finding.Title}</h3>
+              <h3>{finding.Title || finding.displayData?.title || 'Untitled Alert'}</h3>
             </div>
             <div className="alert-meta">
               <div 
@@ -169,7 +170,7 @@ const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
               </div>
               <div className="meta-item">
                 <FaClock className="meta-icon" />
-                <span>{formatDate(finding.CreatedAt)}</span>
+                <span>{formatDate(finding.CreatedAt || finding.displayData?.createdAt)}</span>
               </div>
               <div className="alert-id">#{finding.Id}</div>
               <div className="expand-icon">

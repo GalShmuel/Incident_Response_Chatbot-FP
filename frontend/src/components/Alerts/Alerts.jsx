@@ -1,110 +1,148 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import findingsData from '../../Data/findings.json';
 import AlertCard from '../AlertCard/AlertCard';
 import AlertFilters from '../AlertFilters/AlertFilters';
 import './Alerts.css';
 
-const Alerts = ({ onFindingsChange, onAlertClick }) => {
+const Alerts = ({ onAlertClick }) => {
+  const [allFindings, setAllFindings] = useState([]); // Store all findings
+  const [displayedFindings, setDisplayedFindings] = useState([]); // Store filtered findings for display
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('open');
-  const [uniqueFindings, setUniqueFindings] = useState([]);
   const prevSentFindings = useRef(null);
 
-  // Load saved alert states from localStorage on component mount
-  useEffect(() => {
-    const savedAlertStates = localStorage.getItem('alertStates');
-    if (savedAlertStates) {
-      const parsedStates = JSON.parse(savedAlertStates);
-      // Initialize findings with saved states
-      const findingsWithSavedStates = findingsData.map(finding => ({
-        ...finding,
-        Status: parsedStates[finding.Id] || finding.Status || 'open'
-      }));
-      setUniqueFindings(findingsWithSavedStates);
-    } else {
-      // Initialize with default states if no saved states exist
-      setUniqueFindings(addStatusToFindings(findingsData));
-    }
-  }, []);
-
-  // Add status to findings if not present
-  const addStatusToFindings = useCallback((findings) => {
-    return findings.map(finding => ({
-      ...finding,
-      Status: finding.Status || 'open' // Default to 'open' if status not set
-    }));
-  }, []);
-
-  // Handle status change and save to localStorage
-  const handleStatusChange = useCallback((findingId, newStatus) => {
-    setUniqueFindings(prevFindings => {
-      const updatedFindings = prevFindings.map(finding => 
-        finding.Id === findingId 
-          ? { ...finding, Status: newStatus }
-          : finding
-      );
-      
-      // Save updated states to localStorage
-      const alertStates = updatedFindings.reduce((acc, finding) => {
-        acc[finding.Id] = finding.Status;
-        return acc;
-      }, {});
-      localStorage.setItem('alertStates', JSON.stringify(alertStates));
-      
-      return updatedFindings;
+  // Sort findings by severity
+  const sortFindingsBySeverity = (findings) => {
+    return [...findings].sort((a, b) => {
+      const severityA = a.Severity || 0;
+      const severityB = b.Severity || 0;
+      return severityB - severityA; // Sort in descending order
     });
-  }, []);
+  };
 
-  // Filter findings by severity and status
-  const filterFindings = useCallback((findings, severities) => {
-    const findingsArray = Array.isArray(findings) ? findings : 
-                         (findings.Findings || []);
-    
-    const uniqueById = Array.from(new Map(
-      addStatusToFindings(findingsArray).map(finding => [finding.Id, finding])
-    ).values());
-    
-    return uniqueById
-      .filter(finding =>
-        (severities.length === 0 || severities.includes(finding.Severity)) &&
-        finding.Status === selectedStatus
-      )
-      .sort((a, b) => {
-        const severityA = parseInt(a.Severity, 10);
-        const severityB = parseInt(b.Severity, 10);
-        
-        if (severityB !== severityA) {
-          return severityB - severityA;
-        }
-        
-        const dateA = new Date(a.CreatedAt).getTime();
-        const dateB = new Date(b.CreatedAt).getTime();
-        return dateB - dateA;
-      });
-  }, [addStatusToFindings, selectedStatus]);
+  // Fetch alerts with filters
+  const fetchAlerts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  // עדכון הורה בממצאים מסוננים — רק אם הם באמת שונים מהקודמים
-  useEffect(() => {
-    if (onFindingsChange) {
-      const filtered = filterFindings(uniqueFindings, selectedSeverities);
-      const currentStr = JSON.stringify(filtered);
-      const prevStr = prevSentFindings.current;
-
-      if (currentStr !== prevStr) {
-        prevSentFindings.current = currentStr;
-        onFindingsChange(filtered);
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (selectedSeverities.length > 0) {
+        params.append('severity', selectedSeverities.join(','));
       }
-    }
-  }, [uniqueFindings, selectedSeverities, filterFindings, onFindingsChange]);
+      // Remove status filter from API call to get all alerts
+      const response = await fetch(`http://localhost:5000/api/alerts?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch alerts');
+      }
 
-  const filteredFindings = filterFindings(uniqueFindings, selectedSeverities);
+      const data = await response.json();
+      const sortedData = sortFindingsBySeverity(data);
+      setAllFindings(sortedData);
+      
+      // Filter findings based on selected status
+      const filteredFindings = sortedData.filter(finding => {
+        const isArchived = finding.Service?.Archived;
+        return selectedStatus === 'open' ? !isArchived : isArchived;
+      });
+      setDisplayedFindings(filteredFindings);
+    } catch (err) {
+      console.error('Error fetching alerts:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch alerts when component mounts or filters change
+  useEffect(() => {
+    fetchAlerts();
+  }, [selectedSeverities]);
+
+  // Update displayed findings when status changes
+  useEffect(() => {
+    const filteredFindings = allFindings.filter(finding => {
+      const isArchived = finding.Service?.Archived;
+      return selectedStatus === 'open' ? !isArchived : isArchived;
+    });
+    setDisplayedFindings(filteredFindings);
+  }, [selectedStatus, allFindings]);
+
+  // Handle severity filter change
+  const handleSeverityChange = (severity) => {
+    setSelectedSeverities(prev => {
+      if (prev.includes(severity)) {
+        return prev.filter(s => s !== severity);
+      }
+      return [...prev, severity];
+    });
+  };
+
+  // Handle status filter change
+  const handleStatusChange = (status) => {
+    setSelectedStatus(status);
+  };
+
+  // Handle alert status change
+  const handleAlertStatusChange = async (alertId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/findings/${alertId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          Service: {
+            Archived: newStatus === 'closed'
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update alert status');
+      }
+
+      // Update local state immediately without fetching
+      setAllFindings(prevFindings => {
+        const updatedFindings = prevFindings.map(finding => 
+          finding.Id === alertId 
+            ? {
+                ...finding,
+                Service: {
+                  ...finding.Service,
+                  Archived: newStatus === 'closed'
+                }
+              }
+            : finding
+        );
+        return sortFindingsBySeverity(updatedFindings);
+      });
+    } catch (err) {
+      console.error('Error updating alert status:', err);
+      setError(err.message);
+    }
+  };
+
+  // Calculate counts from all findings
+  const openCount = allFindings.filter(f => !f.Service?.Archived).length;
+  const resolvedCount = allFindings.filter(f => f.Service?.Archived).length;
+
+  if (loading) {
+    return <div className="loading">Loading alerts...</div>;
+  }
+
+  if (error) {
+    return <div className="error">Error: {error}</div>;
+  }
 
   return (
     <div className="alerts-page">
       <AlertFilters 
         selectedSeverities={selectedSeverities}
         onSeverityChange={setSelectedSeverities}
-        findings={uniqueFindings}
+        findings={allFindings}
       />
       <div className="alerts-container">
         <div className="alerts-status-container">
@@ -114,31 +152,27 @@ const Alerts = ({ onFindingsChange, onAlertClick }) => {
               onClick={() => setSelectedStatus('open')}
             >
               Open Alerts
-              <span className="status-count">
-                {uniqueFindings.filter(f => f.Status === 'open').length}
-              </span>
+              <span className="status-count">{openCount}</span>
             </button>
             <button 
               className={`status-filter-button ${selectedStatus === 'resolved' ? 'active' : ''}`}
               onClick={() => setSelectedStatus('resolved')}
             >
               Resolved Alerts
-              <span className="status-count">
-                {uniqueFindings.filter(f => f.Status === 'resolved').length}
-              </span>
+              <span className="status-count">{resolvedCount}</span>
             </button>
           </div>
         </div>
         <div className="alerts-list">
-          {filteredFindings.map((finding, index) => (
+          {displayedFindings.map((finding, index) => (
             <AlertCard 
               key={`${finding.Id}-${index}`} 
               finding={finding}
-              onStatusChange={handleStatusChange}
+              onStatusChange={handleAlertStatusChange}
               onChatOpen={onAlertClick}
             />
           ))}
-          {filteredFindings.length === 0 && (
+          {displayedFindings.length === 0 && (
             <div className="no-results">
               {selectedSeverities.length > 0 
                 ? "No alerts found for the selected severity levels"

@@ -4,6 +4,8 @@ import ChatInput from '../ChatInput/ChatInput';
 import { IoPersonOutline, IoAddCircleOutline } from 'react-icons/io5';
 import { RiRobot2Line } from 'react-icons/ri';
 import { FaTrash } from 'react-icons/fa';
+import Settings from '../Settings/Settings';
+import Menu from '../../Menu/Menu';
 
 const formatJsonString = (content) => {
   try {
@@ -348,71 +350,17 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
     const [error, setError] = useState(null);
     const [deletingChatId, setDeletingChatId] = useState(null);
     const [currentChatId, setCurrentChatId] = useState(null);
-    const [showMenu, setShowMenu] = useState(true);
-    const [pendingAlertData, setPendingAlertData] = useState(null);
-    const inactivityTimerRef = useRef(null);
+    const [showMenu, setShowMenu] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [pendingAlertData, setPendingAlertData] = useState(null);
+    const [settingsMessage, setSettingsMessage] = useState(null);
+    const inactivityTimerRef = useRef(null);
     const [selectedSetting, setSelectedSetting] = useState(null);
-    const [settingsCategories, setSettingsCategories] = useState([
-        {
-            id: 'alert-management',
-            title: 'Alert Management',
-            description: 'Configure alert severity and status',
-            icon: '🔔',
-            options: [
-                { id: 'alertId', label: 'Alert ID', type: 'text', placeholder: 'Enter Alert ID' },
-                { id: 'severity', label: 'Alert Severity', type: 'select', options: ['1','2','3','4','5','6','7','8','9','10'] },
-                { id: 'status', label: 'Alert Status', type: 'select', options: ['Open', 'Close'] }
-            ]
-        },
-        {
-            id: 'notifications',
-            title: 'Alert Notifications',
-            description: 'Configure how and when you receive security alerts',
-            icon: '🔔',
-            options: [
-                { id: 'email', label: 'Email Notifications', type: 'toggle' },
-                { id: 'push', label: 'Push Notifications', type: 'toggle' },
-                { id: 'severity', label: 'Minimum Severity Level', type: 'select', options: ['Low', 'Medium', 'High', 'Critical'] }
-            ]
-        },
-        {
-            id: 'dashboard',
-            title: 'Dashboard Layout',
-            description: 'Customize your security dashboard view',
-            icon: '📊',
-            options: [
-                { id: 'theme', label: 'Theme', type: 'select', options: ['Light', 'Dark', 'System'] },
-                { id: 'layout', label: 'Layout Style', type: 'select', options: ['Compact', 'Detailed', 'Custom'] },
-                { id: 'refresh', label: 'Auto-refresh Interval', type: 'select', options: ['30s', '1m', '5m', '15m'] }
-            ]
-        },
-        {
-            id: 'security',
-            title: 'Security Preferences',
-            description: 'Manage your security settings and preferences',
-            icon: '🔒',
-            options: [
-                { id: '2fa', label: 'Two-Factor Authentication', type: 'toggle' },
-                { id: 'session', label: 'Session Timeout', type: 'select', options: ['15m', '30m', '1h', '4h'] },
-                { id: 'logging', label: 'Activity Logging', type: 'toggle' }
-            ]
-        },
-        {
-            id: 'display',
-            title: 'Display Options',
-            description: 'Adjust how information is displayed',
-            icon: '📱',
-            options: [
-                { id: 'font', label: 'Font Size', type: 'select', options: ['Small', 'Medium', 'Large'] },
-                { id: 'timezone', label: 'Time Zone', type: 'select', options: ['UTC', 'Local', 'Custom'] },
-                { id: 'date', label: 'Date Format', type: 'select', options: ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'] }
-            ]
-        }
-    ]);
 
     // Add state for current alert ID
     const [currentAlertId, setCurrentAlertId] = useState(null);
+    const [inputAlertId, setInputAlertId] = useState('');
+    const [settingsValues, setSettingsValues] = useState({});
 
     const menuOptions = [
         {
@@ -478,7 +426,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
             }
-        }, 60000); // 30 seconds
+        }, 1000000); // 30 seconds
     };
 
     // Effect to handle alert data when it changes
@@ -615,178 +563,36 @@ Please select an option by typing its number or description.`,
         setSelectedSetting(null);
         setMessages(prev => [...prev, {
             role: 'menu',
-            content: (
-                <div className="chat-menu-options">
-                    {settingsCategories.map((category) => (
-                        <div
-                            key={category.id}
-                            className="chat-menu-option"
-                            onClick={() => handleSettingSelect(category)}
-                        >
-                            <div className="chat-menu-option-icon">{category.icon}</div>
-                            <div className="chat-menu-option-content">
-                                <h3>{category.title}</h3>
-                                <p>{category.description}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ),
-            timestamp: new Date().toLocaleTimeString()
-        }]);
-    };
-
-    const handleSettingSelect = (category) => {
-        setSelectedSetting(category);
-        setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: `Configure ${category.title}:`,
-            timestamp: new Date().toLocaleTimeString()
-        }, {
-            role: 'menu',
-            content: (
-                <div className="settings-options">
-                    {category.options.map((option) => (
-                        <div key={option.id} className="setting-option">
-                            <label htmlFor={option.id}>{option.label}</label>
-                            {option.type === 'toggle' ? (
-                                <div className="toggle-switch">
-                                    <input type="checkbox" id={option.id} />
-                                    <label htmlFor={option.id}></label>
+            content: <Settings 
+                pendingAlertData={pendingAlertData}
+                onSaveSettings={({ success, message }) => {
+                    setMessages(prev => [...prev, {
+                        role: 'assistant',
+                        content: message,
+                        timestamp: new Date().toLocaleTimeString()
+                    }]);
+                    if (success) {
+                        setMessages(prev => [...prev, {
+                            role: 'menu',
+                            content: (
+                                <div className="settings-actions">
+                                    <button className="save-settings" onClick={() => handleConfigureSettings()}>
+                                        Configure Another Category
+                                    </button>
+                                    <button className="back-settings" onClick={() => {
+                                        setShowSettings(false);
+                                        setSelectedSetting(null);
+                                        setShowMenu(true);
+                                    }}>
+                                        Return to Main Menu
+                                    </button>
                                 </div>
-                            ) : option.type === 'text' ? (
-                                <input 
-                                    type="text" 
-                                    id={option.id} 
-                                    className="setting-input"
-                                    placeholder={option.placeholder || ''}
-                                    value={option.id === 'alertId' ? (pendingAlertData?.displayData?.id || pendingAlertData?.Id || '') : ''}
-                                    readOnly={option.id === 'alertId'}
-                                    required
-                                />
-                            ) : (
-                                <select id={option.id} className="setting-select" required>
-                                    <option value="">Select {option.label}</option>
-                                    {option.options.map((opt) => (
-                                        <option key={opt} value={opt}>{opt}</option>
-                                    ))}
-                                </select>
-                            )}
-                        </div>
-                    ))}
-                    <div className="settings-actions">
-                        <button className="save-settings" onClick={() => handleSaveSettings(category)}>
-                            Save Changes
-                        </button>
-                        <button className="back-settings" onClick={() => handleConfigureSettings()}>
-                            Back to Categories
-                        </button>
-                    </div>
-                </div>
-            ),
-            timestamp: new Date().toLocaleTimeString()
-        }]);
-    };
-
-    const handleSaveSettings = async (category) => {
-        if (category.id === 'alert-management') {
-            try {
-                // Get the current alert data
-                const response = await fetch('http://localhost:5000/api/findings');
-                if (!response.ok) throw new Error('Failed to fetch findings');
-                const findings = await response.json();
-
-                // Get the selected values from the form with error checking
-                const severitySelect = document.querySelector('select[id="severity"]');
-                const statusSelect = document.querySelector('select[id="status"]');
-                const alertIdInput = document.querySelector('input[id="alertId"]');
-
-                // Validate that all form elements exist
-                if (!severitySelect || !statusSelect || !alertIdInput) {
-                    throw new Error('Form elements not found. Please try refreshing the page.');
-                }
-
-                const newSeverity = parseInt(severitySelect.value);
-                const newStatus = statusSelect.value === 'Close';
-                const alertId = alertIdInput.value.trim();
-
-                if (!alertId) {
-                    setMessages(prev => [...prev, {
-                        role: 'assistant',
-                        content: 'Please enter an Alert ID to update.',
-                        timestamp: new Date().toLocaleTimeString()
-                    }]);
-                    return;
-                }
-
-                // Validate that the alert ID exists in the findings
-                const findingExists = findings.some(f => f.Id === alertId);
-                if (!findingExists) {
-                    setMessages(prev => [...prev, {
-                        role: 'assistant',
-                        content: `Alert ID ${alertId} not found. Please enter a valid Alert ID.`,
-                        timestamp: new Date().toLocaleTimeString()
-                    }]);
-                    return;
-                }
-
-                // Update the specific finding
-                const updateResponse = await fetch(`http://localhost:5000/api/findings/${alertId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        Severity: newSeverity,
-                        Service: {
-                            status: !newStatus // true for open, false for closed
-                        }
-                    })
-                });
-
-                if (!updateResponse.ok) {
-                    throw new Error(`Failed to update finding ${alertId}`);
-                }
-
-                const result = await updateResponse.json();
-
-                setMessages(prev => [...prev, {
-                    role: 'assistant',
-                    content: `Alert ${alertId} has been updated successfully. New settings: Severity ${newSeverity}, Status ${newStatus ? 'Closed' : 'Open'}.`,
-                    timestamp: new Date().toLocaleTimeString()
-                }]);
-            } catch (error) {
-                console.error('Error updating finding:', error);
-                setMessages(prev => [...prev, {
-                    role: 'assistant',
-                    content: `Error: ${error.message}. Please try again.`,
-                    timestamp: new Date().toLocaleTimeString()
-                }]);
-            }
-        } else {
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: `${category.title} settings have been updated successfully. Would you like to configure another category?`,
-                timestamp: new Date().toLocaleTimeString()
-            }]);
-        }
-
-        setMessages(prev => [...prev, {
-            role: 'menu',
-            content: (
-                <div className="settings-actions">
-                    <button className="save-settings" onClick={() => handleConfigureSettings()}>
-                        Configure Another Category
-                    </button>
-                    <button className="back-settings" onClick={() => {
-                        setShowSettings(false);
-                        setSelectedSetting(null);
-                        setShowMenu(true);
-                    }}>
-                        Return to Main Menu
-                    </button>
-                </div>
-            ),
+                            ),
+                            timestamp: new Date().toLocaleTimeString()
+                        }]);
+                    }
+                }}
+            />,
             timestamp: new Date().toLocaleTimeString()
         }]);
     };
@@ -919,7 +725,14 @@ Please select an option by typing its number or description.`,
 
             const data = await response.json();
             
-            if (response.ok && data.message) {
+            if (response.ok) {
+                if (data.showMenu) {
+                    // If showMenu is true, show the menu component
+                    setShowMenu(true);
+                    setIsThinking(false);
+                    return;
+                }
+
                 if (!currentChatId) {
                     setCurrentChatId(data.chatId);
                     // Refresh recent chats when a new chat is created
@@ -956,26 +769,7 @@ Please select an option by typing its number or description.`,
     };
 
     if (showMenu) {
-        return (
-            <div className="chat-menu">
-                <h2>Select What Would You Like to Do</h2>
-                <div className="menu-options">
-                    {menuOptions.map((option) => (
-                        <div
-                            key={option.id}
-                            className="menu-option"
-                            onClick={() => handleMenuSelect(option)}
-                        >
-                            <div className="menu-option-icon">{option.icon}</div>
-                            <div className="menu-option-content">
-                                <h3>{option.title}</h3>
-                                <p>{option.description}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
+        return <Menu onSelect={handleMenuSelect} />;
     }
 
     return (

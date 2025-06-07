@@ -2,24 +2,38 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: hidden; /* Prevent double scrollbars */
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    background: var(--bg-color);
+    color: var(--text-color);
 }
 
 .ChatMessages {
     flex: 1;
     overflow-y: auto;
-    padding: 1px;
+    overflow-x: hidden;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-color);
+    color: var(--text-color);
 }
 
 .message {
     display: flex;
     gap: 12px;
     max-width: 100%;
+    width: 100%;
     animation: fadeIn 0.3s ease;
     align-items: flex-start;
+    box-sizing: border-box;
+    padding: 0 8px;
+    margin-bottom: 0.5rem;
 }
 
 .message.user {
@@ -37,14 +51,14 @@
     margin-top: 4px; /* Add a small top margin to align with the first line of text */
 }
 
-.user-icon-wrapper {
-    background-color: #66c0c5; /* Match the user message background color */
-    color: white;
+.icon-wrapper.user-icon-wrapper {
+    background-color: var(--chat-bubble-user);
+    color: var(--chat-text-user);
 }
 
-.bot-icon-wrapper {
-    background-color: #f3f4f6; /* Match the bot message background color */
-    color: #374151;
+.icon-wrapper.bot-icon-wrapper {
+    background-color: var(--chat-bubble-bot);
+    color: var(--chat-text-bot);
 }
 
 .icon {
@@ -53,7 +67,7 @@
 }
 
 .message-text {
-    background-color: #f8f9fa;
+    background-color: var(--hover-bg);
     padding: calc(0.6em + 0.3vw) calc(0.8em + 0.4vw);
     padding-bottom: calc(1.5em + 0.5vw);
     border-radius: 8px;
@@ -66,20 +80,21 @@
     box-sizing: border-box;
     overflow-wrap: break-word;
     word-wrap: break-word;
+    word-break: break-word;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .message.user .message-text {
-    background: linear-gradient(135deg, #66c0c5 0%, #5ab5ba 100%);
-    color: rgb(255, 255, 255);
-    box-shadow: 0 1px 2px rgba(102, 192, 197, 0.2);
+    background: linear-gradient(135deg, var(--chat-bubble-user) 0%, #5ab5ba 100%);
+    color: var(--chat-text-user);
+    box-shadow: 0 1px 2px var(--shadow-color);
     flex-direction: row-reverse;
-    padding-bottom: 25px;  /* Keep same spacing as bot messages */
+    padding-bottom: 30px;  /* Increased padding for user messages */
 }
 
 .ChatInputArea {
-    background-color: #529295f3;
-    border-top: 1px solid #e5e7eb;
+    background-color: var(--primary-color);
+    border-top: 1px solid var(--border-color);
     align-items: center;
     gap: 0.2rem;
     margin-bottom: 0; /* Ensure no margin at bottom */
@@ -88,8 +103,8 @@
 .send-button {
     padding: 4px 8px;
     background-color: transparent;
-    color: white;
-    border: 2px solid #69b3ae;
+    color: var(--text-color);
+    border: 2px solid var(--primary-color);
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.9rem;
@@ -101,18 +116,19 @@
 }
 
 .send-button:hover:not(:disabled) {
-    background-color: #43938b;
+    background-color: var(--primary-color);
 }
 
 .send-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    color: var(--text-color);
 }
 
 .spinner {
     width: 16px;
     height: 16px;
-    border: 2px solid #ffffff;
+    border: 2px solid var(--text-color);
     border-top: 2px solid transparent;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -139,11 +155,15 @@
     color: #d4d4d4;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .code-content {
     position: relative;
     padding: 0;
+    overflow-x: auto;
+    max-width: 100%;
 }
 
 .code-header {
@@ -209,6 +229,8 @@ pre.code-block {
     background: #1e1e1e;
     color: #d4d4d4;
     tab-size: 2;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Syntax highlighting */
@@ -269,15 +291,15 @@ pre.code-block {
 
 /* Ensure code blocks don't add extra space in messages */
 .message-text .code-block-wrapper {
-    margin: 0.5em 0;
+    margin: 1rem 0;
 }
 
 .message-text .code-block-wrapper:first-child {
-    margin-top: 0;
+    margin-top: 0.5rem;
 }
 
 .message-text .code-block-wrapper:last-child {
-    margin-bottom: 0;
+    margin-bottom: 0.5rem;
 }
 
 /* Language-specific styles */
@@ -420,27 +442,27 @@ pre.code-block {
 }
 
 ul {
-    margin: 0.5rem 0;
+    margin: 0.8rem 0;
     padding-left: 1.5rem;
 }
 
 li {
-    margin: 0.25rem 0;
+    margin: 0.4rem 0;
 }
 
 .message-timestamp {
     font-size: 0.75rem;
     color: #6b7280;
     position: absolute;
-    bottom: 6px;
-    right: 8px;
+    bottom: 8px;
+    right: 12px;
 }
 
 .message.user .message-timestamp {
     color: rgba(255, 255, 255, 0.8);
     position: absolute;
-    bottom: 6px;
-    left: 8px;
+    bottom: 8px;
+    left: 12px;
     right: auto;
 }
 
@@ -705,36 +727,36 @@ li {
 
 /* Enhanced headline styling */
 .message-text h1 {
+    margin: 1.2rem 0 0.8rem;
     font-size: 1.8rem;
     font-weight: 600;
-    margin: 0.5rem 0 0.3rem;
     color: #66c0c5;
     border-bottom: 3px solid #66c0c5;
     padding-bottom: 0.3rem;
 }
 
 .message-text h2 {
+    margin: 1rem 0 0.6rem;
     font-size: 1.5rem;
     font-weight: 600;
-    margin: 0.4rem 0 0.2rem;
     color: #43a3a8;
     border-bottom: 2px solid #43a3a8;
     padding-bottom: 0.2rem;
 }
 
 .message-text h3 {
+    margin: 0.8rem 0 0.4rem;
     font-size: 1.3rem;
     font-weight: 600;
-    margin: 0.3rem 0 0.2rem;
     color: #2a8a8f;
     border-bottom: 1px solid #2a8a8f;
     padding-bottom: 0.2rem;
 }
 
 .message-text h4 {
+    margin: 0.6rem 0 0.3rem;
     font-size: 1.1rem;
     font-weight: 600;
-    margin: 0.3rem 0 0.2rem;
     color: #1f6b6f;
     border-bottom: 1px solid #1f6b6f;
     padding-bottom: 0.1rem;
@@ -787,13 +809,13 @@ li {
 
 /* List styling for alert analysis */
 .message-text ul {
-    margin: 0.2rem 0;
-    padding-left: 1.2rem;
+    margin: 0.8rem 0;
+    padding-left: 1.5rem;
     list-style-type: none;
 }
 
 .message-text ul li {
-    margin: 0.1rem 0;
+    margin: 0.4rem 0;
     position: relative;
     padding-left: 0.8rem;
     line-height: 1.4;
@@ -1069,6 +1091,8 @@ pre.code-block.language-bash span.prompt {
     color: #d4d4d4;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .code-header {
@@ -1097,6 +1121,8 @@ pre.code-block {
     background: #1e1e1e;
     color: #d4d4d4;
     tab-size: 2;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Optional: prompt styling for bash */
@@ -1109,13 +1135,10 @@ pre.code-block.language-bash span.prompt {
 }
 
 .chat-menu {
-    display: flex;
-    flex-direction: column;
+    padding: 1rem;
+    overflow-y: auto;
     height: 100%;
-    padding: 0.8rem;
     box-sizing: border-box;
-    overflow: hidden;
-    min-height: 0;
 }
 
 .chat-menu h2 {
@@ -1129,33 +1152,30 @@ pre.code-block.language-bash span.prompt {
 .menu-options {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    overflow: hidden;
-    min-height: 0;
-    flex: 1;
-    padding: 0 0.2rem; /* Add small padding to ensure borders are visible */
+    gap: 1rem;
+    padding: 1rem;
+    overflow-y: auto;
+    max-height: calc(100% - 60px);
 }
 
 .menu-option {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem;
-    background: #f8f9fa;
+    background: #ffffff;
     border-radius: 8px;
+    padding: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid #e5e7eb;
-    min-height: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
     width: 100%;
-    box-sizing: border-box; /* Ensure padding is included in width calculation */
-    margin: 0; /* Reset any default margins */
+    box-sizing: border-box;
 }
 
 .menu-option:hover {
-    background: #f3f4f6;
-    transform: translateY(-1px);
-    border-color: #66c0c5; /* Highlight border on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-color: #007bff;
 }
 
 .menu-option-icon {
@@ -1228,16 +1248,18 @@ h4.chat-heading {
 
 /* Regular table styling (outside code blocks) */
 .table-wrapper {
-    margin: 1rem 0;
     overflow-x: auto;
+    max-width: 100%;
+    margin: 1rem 0;
 }
 
 .chat-table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #e0e0e0;
-    background-color: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    font-size: 0.9rem;
+    min-width: 100%;
+    box-sizing: border-box;
 }
 
 .chat-table th,
@@ -1385,10 +1407,10 @@ h4.chat-heading {
 }
 
 .chat-menu-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0.4rem;
     background: #f8f9fa;
     border-radius: 8px;
     margin-top: 0.5rem;
@@ -1403,6 +1425,8 @@ h4.chat-heading {
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .chat-menu-option:hover {
@@ -1435,50 +1459,142 @@ h4.chat-heading {
 
 /* Add responsive styles */
 @media (max-width: 768px) {
-    .chat-menu-options {
-        grid-template-columns: 1fr;
+    .message-text {
+        max-width: 90%;
+    }
+    
+    .setting-option {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .setting-select,
+    .setting-input {
+        width: 100%;
     }
 }
 
 .settings-options {
+    padding: 0.6rem;
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-top: 0.5rem;
+    gap: 0.6rem;
+    position: relative;
 }
 
 .setting-option {
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 0.6rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem;
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
+    gap: 0.6rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.setting-option:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
 }
 
 .setting-option label {
     font-weight: 500;
-    color: #212529;
+    color: #374151;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 0.4rem;
 }
 
-.setting-select {
-    padding: 0.5rem;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background-color: white;
-    color: #212529;
+.setting-select,
+.setting-input {
     min-width: 120px;
+    max-width: 40%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    color: #374151;
+    cursor: text;
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    opacity: 1;
+    height: auto;
+    line-height: 1.2;
+    width: auto;
+    display: inline-block;
+}
+
+.setting-input:focus {
+    outline: none;
+    border-color: #66c0c5;
+    box-shadow: 0 0 0 2px rgba(102, 192, 197, 0.1);
+    background-color: #ffffff;
+}
+
+.setting-input:hover {
+    border-color: #66c0c5;
+    background-color: #ffffff;
+}
+
+.setting-input::placeholder {
+    color: #9ca3af;
+    opacity: 0.7;
+}
+
+/* Remove any potential overlay or blocking elements */
+.setting-option * {
+    pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+    .setting-input {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .setting-input {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.4rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .setting-input {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.3rem;
+    }
 }
 
 .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 24px;
+    width: 36px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 .toggle-switch input {
@@ -1494,63 +1610,210 @@ h4.chat-heading {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ced4da;
+    background-color: #e5e7eb;
     transition: .4s;
-    border-radius: 24px;
+    border-radius: 18px;
 }
 
 .toggle-switch label:before {
     position: absolute;
     content: "";
-    height: 16px;
-    width: 16px;
-    left: 4px;
-    bottom: 4px;
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
     background-color: white;
     transition: .4s;
     border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .toggle-switch input:checked + label {
-    background-color: #007bff;
+    background-color: #66c0c5;
 }
 
 .toggle-switch input:checked + label:before {
-    transform: translateX(26px);
+    transform: translateX(18px);
 }
 
 .settings-actions {
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: 0.6rem;
+    margin-top: auto;
+    padding: 0.6rem;
     justify-content: flex-end;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .save-settings,
 .back-settings {
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
+    font-size: 0.85rem;
     transition: all 0.2s ease;
+    min-width: 80px;
 }
 
 .save-settings {
-    background-color: #007bff;
+    background-color: #66c0c5;
     color: white;
 }
 
 .save-settings:hover {
-    background-color: #0056b3;
+    background-color: #43a3a8;
+    transform: translateY(-1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .back-settings {
-    background-color: #6c757d;
-    color: white;
+    background-color: #f3f4f6;
+    color: #374151;
 }
 
 .back-settings:hover {
-    background-color: #545b62;
+    background-color: #e5e7eb;
+    transform: translateY(-1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .setting-option {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+        padding: 0.6rem;
+    }
+
+    .setting-option label {
+        margin-bottom: 0.2rem;
+        font-size: 0.8rem;
+    }
+
+    .setting-select,
+    .setting-input {
+        width: 100%;
+        max-width: 100%;
+        min-width: 100%;
+        font-size: 0.8rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .toggle-switch {
+        align-self: flex-start;
+    }
+
+    .settings-actions {
+        flex-direction: column;
+        gap: 0.4rem;
+        padding: 0.6rem;
+    }
+
+    .save-settings,
+    .back-settings {
+        width: 100%;
+        min-width: 100%;
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-options {
+        padding: 0.4rem;
+    }
+
+    .setting-option {
+        padding: 0.4rem;
+    }
+
+    .setting-option label {
+        font-size: 0.75rem;
+    }
+
+    .setting-select,
+    .setting-input {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.4rem;
+    }
+
+    .toggle-switch {
+        width: 32px;
+        height: 16px;
+    }
+
+    .toggle-switch label:before {
+        height: 12px;
+        width: 12px;
+    }
+
+    .toggle-switch input:checked + label:before {
+        transform: translateX(16px);
+    }
+
+    .settings-actions {
+        padding: 0.4rem;
+    }
+
+    .save-settings,
+    .back-settings {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.5rem;
+    }
+}
+
+/* Extra small size handling */
+@media (max-width: 320px) {
+    .settings-options {
+        padding: 0.3rem;
+    }
+
+    .setting-option {
+        padding: 0.3rem;
+        gap: 0.3rem;
+    }
+
+    .setting-option label {
+        font-size: 0.7rem;
+    }
+
+    .setting-select,
+    .setting-input {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.3rem;
+    }
+
+    .toggle-switch {
+        width: 28px;
+        height: 14px;
+    }
+
+    .toggle-switch label:before {
+        height: 10px;
+        width: 10px;
+    }
+
+    .toggle-switch input:checked + label:before {
+        transform: translateX(14px);
+    }
+
+    .settings-actions {
+        padding: 0.3rem;
+        gap: 0.3rem;
+    }
+
+    .save-settings,
+    .back-settings {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        min-width: 60px;
+    }
 }
   

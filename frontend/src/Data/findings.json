@@ -720,7 +720,7 @@
                     }
                 ]
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-01T14:19:17.000Z",
@@ -730,9 +730,10 @@
             "AdditionalInfo": {
                 "Value": "{\"threatListName\":\"Amazon\",\"authenticationMethod\":\"AuthHeader\"}",
                 "Type": "default"
-            }
+            },
+            "status": false
         },
-        "Severity": 8,
+        "Severity": 4,
         "Title": "The resource discovery API ListObjects was invoked from a Tor exit node.",
         "Type": "Discovery:S3/TorIPCaller",
         "UpdatedAt": "2024-02-01T14:24:22.120Z"
@@ -833,7 +834,7 @@
                     }
                 ]
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-01T14:19:09.000Z",
@@ -843,9 +844,10 @@
             "AdditionalInfo": {
                 "Value": "{\"threatListName\":\"Amazon\",\"authenticationMethod\":\"AuthHeader\"}",
                 "Type": "default"
-            }
+            },
+            "status": false
         },
-        "Severity": 8,
+        "Severity": 10,
         "Title": "The API GetObject was invoked from a Tor exit node.",
         "Type": "UnauthorizedAccess:S3/TorIPCaller",
         "UpdatedAt": "2024-02-01T14:24:13.639Z"
@@ -953,9 +955,10 @@
             "AdditionalInfo": {
                 "Value": "{}",
                 "Type": "default"
-            }
+            },
+            "status": false
         },
-        "Severity": 8,
+        "Severity": 6,
         "Title": "Amazon S3 Public Anonymous Access was granted for the S3 bucket tencyle-s3-discovery-tor.",
         "Type": "Policy:S3/BucketAnonymousAccessGranted",
         "UpdatedAt": "2024-02-01T14:22:02.274Z"
@@ -1163,7 +1166,7 @@
                     }
                 }
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-01T14:16:42.000Z",
@@ -1577,7 +1580,7 @@
                     }
                 ]
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 2,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-01T13:42:42.000Z",
@@ -1589,7 +1592,7 @@
                 "Type": "default"
             }
         },
-        "Severity": 8,
+        "Severity": 7,
         "Title": "The resource discovery API ListObjects was invoked from a Tor exit node.",
         "Type": "Discovery:S3/TorIPCaller",
         "UpdatedAt": "2024-02-01T13:48:24.643Z"
@@ -3501,7 +3504,7 @@
                     }
                 }
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-01-30T14:01:27.000Z",

@@ -8,21 +8,23 @@
 .chat-input {
     flex: 1;
     padding: 10px 15px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--input-border);
     border-radius: 20px;
     font-size: 0.95rem;
     outline: none;
     transition: border-color 0.2s ease;
+    background: var(--input-bg);
+    color: var(--text-color);
 }
 
 .chat-input:focus {
-    border-color: #66c0c5;
+    border-color: var(--input-focus-border);
 }
 
 .chat-input:disabled {
-    background-color: #f3f4f6;
+    background-color: var(--secondary-color);
     cursor: not-allowed;
-    color: #6b7280;
+    color: var(--text-color);
 }
 
 .chat-input-container.disabled {
@@ -30,7 +32,7 @@
 }
 
 .chat-input-container.disabled .chat-input {
-    background-color: #f3f4f6;
+    background-color: var(--secondary-color);
 }
 
 .send-button {
@@ -43,15 +45,16 @@
     justify-content: center;
     border-radius: 50%;
     transition: all 0.2s ease;
+    color: var(--primary-color);
 }
 
 .send-button:hover {
-    background-color: rgba(102, 192, 197, 0.1);
+    background-color: var(--primary-color);
     transform: scale(1.1);
 }
 
 .send-button:disabled {
-    color: rgba(0, 0, 0, 0.2);
+    color: var(--border-color);
     cursor: not-allowed;
     background-color: transparent !important;
     transform: none !important;
@@ -67,10 +70,10 @@ textarea.chat-input {
     min-height: 44px !important;
     max-height: 120px !important;
     padding: 12px 18px !important;
-    border: 1px solid #e5e7eb !important;
+    border: 1px solid var(--input-border) !important;
     border-radius: 24px !important;
-    background-color: #f8fafc !important;
-    color: #1a1a1a !important;
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
     font-size: 0.95rem !important;
     line-height: 1.5 !important;
     resize: none !important;
@@ -83,13 +86,14 @@ textarea.chat-input {
 }
 
 textarea.chat-input:focus {
-    border-color: #66c0c5 !important;
-    box-shadow: 0 0 0 3px rgba(102, 192, 197, 0.1) !important;
-    background-color: white !important;
+    border-color: var(--input-focus-border) !important;
+    box-shadow: 0 0 0 3px var(--input-focus-shadow) !important;
+    background-color: var(--input-bg) !important;
 }
 
 textarea.chat-input::placeholder {
-    color: #6b7280 !important;
+    color: var(--text-color) !important;
+    opacity: 0.7;
 }
 
 /* Scrollbar styling */
@@ -98,24 +102,24 @@ textarea.chat-input::-webkit-scrollbar {
 }
 
 textarea.chat-input::-webkit-scrollbar-track {
-    background: #f8fafc !important;
+    background: var(--secondary-color) !important;
     border-radius: 6px !important;
 }
 
 textarea.chat-input::-webkit-scrollbar-thumb {
-    background-color: #66c0c5 !important;
+    background-color: var(--primary-color) !important;
     border-radius: 6px !important;
     border: 2px solid #f8fafc !important;
 }
 
 textarea.chat-input::-webkit-scrollbar-thumb:hover {
-    background-color: #43a3a8 !important;
+    background-color: var(--primary-color) !important;
 }
 
 /* Firefox scrollbar */
 textarea.chat-input {
     scrollbar-width: thin !important;
-    scrollbar-color: #66c0c5 #f8fafc !important;
+    scrollbar-color: var(--primary-color) var(--secondary-color) !important;
 }
 
 /* Media Queries */

@@ -1,0 +1,263 @@
+@import '../../../styles/theme.css';
+
+
+/* Apply theme variables to existing styles */
+.settings-categories {
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.settings-category {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.8rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0.5rem;
+}
+
+.settings-category:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px var(--shadow-color);
+    border-color: var(--primary-color);
+    background: var(--hover-bg);
+}
+
+.category-icon {
+    font-size: 1.5rem;
+    margin-right: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    background: var(--secondary-color);
+    border-radius: 6px;
+    padding: 0.3rem;
+    transition: all var(--transition-speed) ease;
+}
+
+.category-content {
+    flex: 1;
+}
+
+.category-content h3 {
+    margin: 0 0 0.3rem 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.category-content p {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.settings-options {
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-color);
+}
+
+.settings-header {
+    text-align: center;
+    margin: 0;
+    padding: 0.8rem;
+    flex-shrink: 0;
+    background: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-header h2 {
+    font-size: 1rem;
+    margin: 0 0 0.3rem 0;
+    color: var(--text-color);
+}
+
+.settings-header p {
+    color: var(--text-color);
+    opacity: 0.8;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.setting-option {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem;
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.setting-option label {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+.setting-option:hover, label:hover{
+    color: black;
+}
+.setting-input,
+.setting-select {
+    min-width: 120px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    background: var(--input-bg);
+    transition: all var(--transition-speed) ease;
+}
+
+.setting-input:focus,
+.setting-select:focus {
+    outline: none;
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 0 2px var(--input-focus-shadow);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--input-border);
+    border-radius: 34px;
+    cursor: pointer;
+    transition: background-color 0.4s;
+}
+
+.toggle-switch label:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.4s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + label {
+    background-color: var(--primary-color);
+}
+
+.toggle-switch input:checked + label:before {
+    transform: translateX(24px);
+}
+
+.settings-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    background: var(--secondary-color);
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+
+.save-settings,
+.back-settings {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all var(--transition-speed) ease;
+    flex: 1;
+}
+
+.save-settings {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.save-settings:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.back-settings {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.back-settings:hover {
+    background-color: var(--hover-bg);
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .settings-category,
+    .setting-option {
+        padding: 0.6rem;
+    }
+
+    .category-icon {
+        font-size: 1.3rem;
+        min-width: 1.8rem;
+        height: 1.8rem;
+        margin-right: 0.6rem;
+    }
+
+    .category-content h3,
+    .setting-option label {
+        font-size: 0.85rem;
+    }
+
+    .category-content p {
+        font-size: 0.75rem;
+    }
+
+    .setting-input,
+    .setting-select {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .settings-actions {
+        padding: 0.6rem;
+    }
+
+    .save-settings,
+    .back-settings {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+} 

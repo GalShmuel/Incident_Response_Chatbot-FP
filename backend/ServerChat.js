@@ -160,7 +160,9 @@ const handleAnalyzeAlert = () => {
 };
 
 const handleIncidentPlaybook = () => {
-    return `You are a cybersecurity incident response assistant. When analyzing a security alert or log, follow these steps:
+    return {
+        type: 'playbook',
+        content: `You are a cybersecurity incident response assistant. When analyzing a security alert or log, follow these steps:
 
             write it as steps of the playbook
             1. Analyze the logs for potential security findings.
@@ -178,7 +180,8 @@ const handleIncidentPlaybook = () => {
             IMPORTANT:
             If you need more information about an alert to provide a complete analysis, ask specific, targeted questions to gather the necessary context.
 
-            After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`;
+            After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`
+    };
 };
 
 const handleAskQuestions = () => {
@@ -232,9 +235,9 @@ app.post('/api/chat', async (req, res) => {
             if (menuOption === 'yes' || menuOption.includes('yes')) {
                 processedMessage = "I have additional questions about the incident response playbook.";
             } else if (menuOption === 'no' || menuOption.includes('no')) {
-                // Return to menu
+                // Return to menu with showMenu flag
                 return res.json({
-                    message: "Please select an option from the menu:\n\n1. 🔍 Analyze Alert\n2. 📘 Incident Playbook\n3. 💬 Ask Questions\n4. ⚙️ Configure Settings",
+                    message: "Returning to main menu",
                     chatId: chat._id.toString(),
                     showMenu: true
                 });
@@ -249,7 +252,8 @@ app.post('/api/chat', async (req, res) => {
                     processedMessage = alertResponse.message;
                 }
             } else if (menuOption === '2' || menuOption.includes('playbook') || menuOption.includes('incident')) {
-                processedMessage = handleIncidentPlaybook();
+                const playbookResponse = handleIncidentPlaybook();
+                processedMessage = playbookResponse.content;
             } else if (menuOption === '3' || menuOption.includes('question') || menuOption.includes('ask')) {
                 processedMessage = handleAskQuestions();
             } else if (menuOption === '4' || menuOption.includes('setting') || menuOption.includes('configure')) {

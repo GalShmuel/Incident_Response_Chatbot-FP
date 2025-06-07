@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,17 +35,90 @@ L.Icon.Default.mergeOptions({
 
 const MapComponent = ({ geoData }) => {
   const map = useMap();
-  React.useEffect(() => {
-    if (Object.keys(geoData).length > 0) {
-      const bounds = L.latLngBounds(Object.values(geoData).map(loc => [loc.lat, loc.lon]));
-      map.fitBounds(bounds);
+  
+  useEffect(() => {
+    if (!map || !geoData || Object.keys(geoData).length === 0) return;
+
+    try {
+      const bounds = L.latLngBounds(
+        Object.values(geoData).map(loc => [loc.lat, loc.lon])
+      );
+      map.fitBounds(bounds, { padding: [50, 50] });
+    } catch (error) {
+      console.error('Error setting map bounds:', error);
     }
   }, [map, geoData]);
+
   return null;
 };
 
-const AlertGraphs = ({ findings }) => {
+const AlertGraphs = () => {
+  const [findings, setFindings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedSeverityRanges, setSelectedSeverityRanges] = useState([]);
+
+  useEffect(() => {
+    const fetchFindings = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/findings', {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (!response.data) {
+          throw new Error('No data received from server');
+        }
+        
+        setFindings(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching findings:', err);
+        let errorMessage = 'Failed to load findings data';
+        
+        if (err.response) {
+          errorMessage = `Server error: ${err.response.status} - ${err.response.data?.message || 'Unknown error'}`;
+        } else if (err.request) {
+          errorMessage = 'No response from server. Please check if the backend is running.';
+        } else {
+          errorMessage = `Error: ${err.message}`;
+        }
+        
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFindings();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="alert-graphs">
+        <div className="graph-container">
+          <h3>Loading findings data...</h3>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="alert-graphs">
+        <div className="graph-container">
+          <h3>Error: {error}</h3>
+          <p>Please check:</p>
+          <ul>
+            <li>Is the backend server running?</li>
+            <li>Is the backend server running on port 5000?</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
   const validFindings = findings.filter(f => {
     const date = new Date(f.UpdatedAt);
@@ -103,13 +177,31 @@ const AlertGraphs = ({ findings }) => {
 
   const sortedDates = Object.keys(timeData).sort((a, b) => new Date(a) - new Date(b));
 
+  const getSeverityColor = (severity) => {
+    const num = typeof severity === 'string' ? parseInt(severity) : severity;
+    // Color gradient from green (low) to red (high)
+    const colors = {
+      1: '#00C851',  // Bright Green
+      2: '#7CB342',  // Light Green
+      3: '#CDDC39',  // Lime
+      4: '#FFEB3B',  // Yellow
+      5: '#FFC107',  // Amber
+      6: '#FF9800',  // Orange
+      7: '#FF5722',  // Deep Orange
+      8: '#F44336',  // Red
+      9: '#D32F2F',  // Dark Red
+      10: '#B22222'  // Firebrick
+    };
+    return colors[num] || '#00C851'; // Default to green if severity is out of range
+  };
+
   const severityPieData = {
     labels: Object.keys(severityCounts),
     datasets: [{
       label: 'Alerts by Severity',
       data: Object.values(severityCounts),
-      backgroundColor: ['#a8dd94', '#dc7a17', '#e23f3f'],
-      borderColor: ['#2d601b', '#784919', '#872323'],
+      backgroundColor: Object.keys(severityCounts).map(severity => getSeverityColor(severity)),
+      borderColor: '#ff452',
       borderWidth: 1,
     }]
   };
@@ -119,8 +211,8 @@ const AlertGraphs = ({ findings }) => {
     datasets: [{
       label: 'Alerts per Day',
       data: sortedDates.map(date => timeData[date]),
-      backgroundColor: 'rgba(24, 98, 148, 0.6)',
-      borderColor: 'rgb(22, 46, 62)',
+      backgroundColor: 'rgba(102, 192, 197, 0.6)',
+      borderColor: '#000000',
       borderWidth: 1
     }]
   };
@@ -139,16 +231,21 @@ const AlertGraphs = ({ findings }) => {
   };
 
   const createSeverityIcon = (severity) => {
-    const num = typeof severity === 'string' ? parseInt(severity) : severity;
-    let color = '#00C851'; //green
-    if (num >= 8) color = '#ff4444'; //red
-    else if (num >= 5) color = '#ffbb33'; //orange
-    else if (num >= 3) color = '#ffeb3b'; //yellow
+    const color = getSeverityColor(severity);
     return L.divIcon({ 
       className: 'custom-marker',
-      html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,0.5);"></div>`,
-      iconSize: [16, 16],
-      iconAnchor: [8, 8]
+      html: `<div style="
+        background:${color};
+        width:14px;
+        height:14px;
+        border-radius:50%;
+        border:3px solid #000000;
+        box-shadow:0 0 6px rgba(0,0,0,0.7);
+        position:relative;
+        z-index:1;
+      "></div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
     });
   };
 
@@ -166,79 +263,111 @@ const AlertGraphs = ({ findings }) => {
     return selectedSeverityRanges.some(r => r[0] === range[0] && r[1] === range[1]);
   };
 
+  const renderMap = () => {
+    if (!geoData || Object.keys(geoData).length === 0) {
+      return (
+        <div className="map-placeholder">
+          <p>No location data available</p>
+        </div>
+      );
+    }
+
+    return (
+      <MapContainer 
+        center={[31.9642, 34.7876]} 
+        zoom={6} 
+        style={{ height: '400px', width: '100%' }}
+      >
+        <TileLayer 
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+          attribution="&copy; OpenStreetMap contributors" 
+        />
+        <MapComponent geoData={geoData} />
+        {Object.values(geoData).map((loc, i) => (
+          <Marker 
+            key={`${loc.lat}-${loc.lon}-${i}`}
+            position={[loc.lat, loc.lon]} 
+            icon={createSeverityIcon(loc.severity)}
+          >
+            <Popup>
+              <div>
+                <h4>{loc.city}, {loc.country}</h4>
+                <p>Attack Count: {loc.count}</p>
+                <p>Severity: {loc.severity}/10</p>
+                <p>Action Type: {loc.actionType}</p>
+                <p>Organization: {loc.organization}</p>
+                <p>IP Addresses:</p>
+                <ul>{Array.from(loc.ips).map((ip, j) => <li key={j}>{ip}</li>)}</ul>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    );
+  };
+
   return (
     <div className="alert-graphs">
-      <div className="graph-container map-container">
-        <h3>Attack Source Locations</h3>
-        <div className="map-summary">
-          <p>Total Alerts: {Object.values(geoData).reduce((sum, loc) => sum + loc.count, 0)}</p>
-          <p>Unique Locations: {Object.keys(geoData).length}</p>
+      {validFindings.length === 0 ? (
+        <div className="graph-container">
+          <h3>No findings data available</h3>
         </div>
-        <MapContainer center={[31.9642, 34.7876]} zoom={6} style={{ height: '400px', width: '100%' }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
-          <MapComponent geoData={geoData} />
-          {Object.values(geoData).map((loc, i) => (
-            <Marker key={i} position={[loc.lat, loc.lon]} icon={createSeverityIcon(loc.severity)}>
-              <Popup>
-                <div>
-                  <h4>{loc.city}, {loc.country}</h4>
-                  <p>Attack Count: {loc.count}</p>
-                  <p>Severity: {loc.severity}/10</p>
-                  <p>Action Type: {loc.actionType}</p>
-                  <p>Organization: {loc.organization}</p>
-                  <p>IP Addresses:</p>
-                  <ul>{Array.from(loc.ips).map((ip, j) => <li key={j}>{ip}</li>)}</ul>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-        
-        <div className="map-legend">
-          <div 
-            className={`legend-item ${isRangeSelected([1, 2]) ? 'active' : ''}`}
-            onClick={() => handleSeverityToggle([1, 2])} 
-            style={{cursor: 'pointer'}}
-          >
-            <span className="legend-color low"></span>
-            <span>Low (1-2)</span>
+      ) : (
+        <>
+          <div className="graph-container map-container">
+            <h3>Attack Source Locations</h3>
+            <div className="map-summary">
+              <p>Total Alerts: {Object.values(geoData).reduce((sum, loc) => sum + loc.count, 0)}</p>
+              <p>Unique Locations: {Object.keys(geoData).length}</p>
+            </div>
+            {renderMap()}
+            <div className="map-legend">
+              <div 
+                className={`legend-item ${isRangeSelected([1, 2]) ? 'active' : ''}`}
+                onClick={() => handleSeverityToggle([1, 2])} 
+                style={{cursor: 'pointer'}}
+              >
+                <span className="legend-color low"></span>
+                <span>Low (1-2)</span>
+              </div>
+              <div 
+                className={`legend-item ${isRangeSelected([3, 4]) ? 'active' : ''}`}
+                onClick={() => handleSeverityToggle([3, 4])} 
+                style={{cursor: 'pointer'}}
+              >
+                <span className="legend-color medium"></span>
+                <span>Medium (3-4)</span>
+              </div>
+              <div 
+                className={`legend-item ${isRangeSelected([5, 7]) ? 'active' : ''}`}
+                onClick={() => handleSeverityToggle([5, 7])} 
+                style={{cursor: 'pointer'}}
+              >
+                <span className="legend-color high"></span>
+                <span>High (5-7)</span>
+              </div>
+              <div 
+                className={`legend-item ${isRangeSelected([8, 10]) ? 'active' : ''}`}
+                onClick={() => handleSeverityToggle([8, 10])} 
+                style={{cursor: 'pointer'}}
+              >
+                <span className="legend-color critical"></span>
+                <span>Critical (8-10)</span>
+              </div>
+            </div>
           </div>
-          <div 
-            className={`legend-item ${isRangeSelected([3, 4]) ? 'active' : ''}`}
-            onClick={() => handleSeverityToggle([3, 4])} 
-            style={{cursor: 'pointer'}}
-          >
-            <span className="legend-color medium"></span>
-            <span>Medium (3-4)</span>
-          </div>
-          <div 
-            className={`legend-item ${isRangeSelected([5, 7]) ? 'active' : ''}`}
-            onClick={() => handleSeverityToggle([5, 7])} 
-            style={{cursor: 'pointer'}}
-          >
-            <span className="legend-color high"></span>
-            <span>High (5-7)</span>
-          </div>
-          <div 
-            className={`legend-item ${isRangeSelected([8, 10]) ? 'active' : ''}`}
-            onClick={() => handleSeverityToggle([8, 10])} 
-            style={{cursor: 'pointer'}}
-          >
-            <span className="legend-color critical"></span>
-            <span>Critical (8-10)</span>
-          </div>
-        </div>
-      </div>
 
-      <div className="graph-container">
-        <h3>Severity Distribution (Pie)</h3>
-        <Pie data={severityPieData} options={options} />
-      </div>
+          <div className="graph-container">
+            <h3>Severity Distribution (Pie)</h3>
+            <Pie data={severityPieData} options={options} />
+          </div>
 
-      <div className="graph-container">
-        <h3>Alerts Over Time</h3>
-        <Bar data={timeChartData} options={options} />
-      </div>
+          <div className="graph-container">
+            <h3>Alerts Over Time</h3>
+            <Bar data={timeChartData} options={options} />
+          </div>
+        </>
+      )}
     </div>
   );
 };

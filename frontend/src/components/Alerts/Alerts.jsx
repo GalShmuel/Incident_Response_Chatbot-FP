@@ -4,12 +4,13 @@ import AlertFilters from '../AlertFilters/AlertFilters';
 import './Alerts.css';
 
 const Alerts = ({ onAlertClick }) => {
-  const [allFindings, setAllFindings] = useState([]); // Store all findings
-  const [displayedFindings, setDisplayedFindings] = useState([]); // Store filtered findings for display
+  const [allFindings, setAllFindings] = useState([]);
+  const [displayedFindings, setDisplayedFindings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('open');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const prevSentFindings = useRef(null);
 
   // Sort findings by severity
@@ -17,58 +18,66 @@ const Alerts = ({ onAlertClick }) => {
     return [...findings].sort((a, b) => {
       const severityA = a.Severity || 0;
       const severityB = b.Severity || 0;
-      return severityB - severityA; // Sort in descending order
+      return severityB - severityA;
     });
   };
 
   // Fetch alerts with filters
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       setError(null);
 
-      // Build query parameters
       const params = new URLSearchParams();
       if (selectedSeverities.length > 0) {
         params.append('severity', selectedSeverities.join(','));
       }
-      // Remove status filter from API call to get all alerts
-      const response = await fetch(`http://localhost:5000/api/alerts?${params.toString()}`);
+      const response = await fetch(`http://localhost:5000/api/findings?${params.toString()}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch alerts');
+        throw new Error('Failed to fetch findings');
       }
 
       const data = await response.json();
       const sortedData = sortFindingsBySeverity(data);
+      
+      // Smooth transition for updates
+      setIsRefreshing(true);
       setAllFindings(sortedData);
       
-      // Filter findings based on selected status
       const filteredFindings = sortedData.filter(finding => {
         const isArchived = finding.Service?.Archived;
         return selectedStatus === 'open' ? !isArchived : isArchived;
       });
       setDisplayedFindings(filteredFindings);
+
+      // Reset refreshing state after a short delay
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 300);
     } catch (err) {
       console.error('Error fetching alerts:', err);
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
-  };
+  }, [selectedSeverities, selectedStatus]);
 
-  // Fetch alerts when component mounts or filters change
+  // Initial fetch and filter changes
   useEffect(() => {
-    fetchAlerts();
-  }, [selectedSeverities]);
+    fetchAlerts(true);
+  }, [fetchAlerts]);
 
-  // Update displayed findings when status changes
+  // Set up periodic refresh
   useEffect(() => {
-    const filteredFindings = allFindings.filter(finding => {
-      const isArchived = finding.Service?.Archived;
-      return selectedStatus === 'open' ? !isArchived : isArchived;
-    });
-    setDisplayedFindings(filteredFindings);
-  }, [selectedStatus, allFindings]);
+    const refreshInterval = setInterval(() => {
+      fetchAlerts(false); // Don't show loading state for periodic refreshes
+    }, 5000);
+    return () => clearInterval(refreshInterval);
+  }, [fetchAlerts]);
 
   // Handle severity filter change
   const handleSeverityChange = (severity) => {
@@ -104,7 +113,7 @@ const Alerts = ({ onAlertClick }) => {
         throw new Error('Failed to update alert status');
       }
 
-      // Update local state immediately without fetching
+      // Update local state immediately
       setAllFindings(prevFindings => {
         const updatedFindings = prevFindings.map(finding => 
           finding.Id === alertId 
@@ -119,6 +128,9 @@ const Alerts = ({ onAlertClick }) => {
         );
         return sortFindingsBySeverity(updatedFindings);
       });
+
+      // Trigger a smooth refresh
+      fetchAlerts(false);
     } catch (err) {
       console.error('Error updating alert status:', err);
       setError(err.message);
@@ -163,7 +175,7 @@ const Alerts = ({ onAlertClick }) => {
             </button>
           </div>
         </div>
-        <div className="alerts-list">
+        <div className={`alerts-list ${isRefreshing ? 'refreshing' : ''}`}>
           {displayedFindings.map((finding, index) => (
             <AlertCard 
               key={`${finding.Id}-${index}`} 

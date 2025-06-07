@@ -34,23 +34,21 @@ const Alerts = ({ onAlertClick }) => {
       if (selectedSeverities.length > 0) {
         params.append('severity', selectedSeverities.join(','));
       }
+      params.append('status', selectedStatus);
+      
       const response = await fetch(`http://localhost:5000/api/findings?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch findings');
       }
 
       const data = await response.json();
-      const sortedData = sortFindingsBySeverity(data);
+      const sortedData = sortFindingsBySeverity(data.findings);
+      const sortedTotalData = sortFindingsBySeverity(data.totalFindings);
       
       // Smooth transition for updates
       setIsRefreshing(true);
-      setAllFindings(sortedData);
-      
-      const filteredFindings = sortedData.filter(finding => {
-        const isArchived = finding.Service?.Archived;
-        return selectedStatus === 'open' ? !isArchived : isArchived;
-      });
-      setDisplayedFindings(filteredFindings);
+      setAllFindings(sortedTotalData);
+      setDisplayedFindings(sortedData);
 
       // Reset refreshing state after a short delay
       setTimeout(() => {
@@ -80,13 +78,8 @@ const Alerts = ({ onAlertClick }) => {
   }, [fetchAlerts]);
 
   // Handle severity filter change
-  const handleSeverityChange = (severity) => {
-    setSelectedSeverities(prev => {
-      if (prev.includes(severity)) {
-        return prev.filter(s => s !== severity);
-      }
-      return [...prev, severity];
-    });
+  const handleSeverityChange = (severities) => {
+    setSelectedSeverities(severities);
   };
 
   // Handle status filter change
@@ -137,13 +130,17 @@ const Alerts = ({ onAlertClick }) => {
     }
   };
 
-  // Calculate counts from all findings
-  const openCount = allFindings.filter(f => !f.Service?.Archived).length;
-  const resolvedCount = allFindings.filter(f => f.Service?.Archived).length;
+  // Calculate counts from filtered findings based on selected severities
+  const filteredBySeverity = allFindings.filter(finding => 
+    selectedSeverities.length === 0 || selectedSeverities.includes(finding.Severity)
+  );
+  
+  const openCount = filteredBySeverity.filter(f => !f.Service?.Archived).length;
+  const resolvedCount = filteredBySeverity.filter(f => f.Service?.Archived).length;
 
-  if (loading) {
-    return <div className="loading">Loading alerts...</div>;
-  }
+  // if (loading) {
+  //   return <div className="loading">Loading alerts...</div>;
+  // }
 
   if (error) {
     return <div className="error">Error: {error}</div>;
@@ -153,7 +150,7 @@ const Alerts = ({ onAlertClick }) => {
     <div className="alerts-page">
       <AlertFilters 
         selectedSeverities={selectedSeverities}
-        onSeverityChange={setSelectedSeverities}
+        onSeverityChange={handleSeverityChange}
         findings={allFindings}
       />
       <div className="alerts-container">
@@ -161,14 +158,14 @@ const Alerts = ({ onAlertClick }) => {
           <div className="alerts-status-filters">
             <button 
               className={`status-filter-button ${selectedStatus === 'open' ? 'active' : ''}`}
-              onClick={() => setSelectedStatus('open')}
+              onClick={() => handleStatusChange('open')}
             >
               Open Alerts
               <span className="status-count">{openCount}</span>
             </button>
             <button 
               className={`status-filter-button ${selectedStatus === 'resolved' ? 'active' : ''}`}
-              onClick={() => setSelectedStatus('resolved')}
+              onClick={() => handleStatusChange('resolved')}
             >
               Resolved Alerts
               <span className="status-count">{resolvedCount}</span>

@@ -1363,7 +1363,7 @@
                 "Type": "default"
             }
         },
-        "Severity": 8,
+        "Severity": 10,
         "Title": "The resource discovery API ListObjects was invoked from a Tor exit node.",
         "Type": "Discovery:S3/TorIPCaller",
         "UpdatedAt": "2024-02-01T14:14:09.240Z"
@@ -4678,7 +4678,7 @@
                 "Type": "default"
             }
         },
-        "Severity": 8,
+        "Severity": 4,
         "Title": "The EC2 instance i-067b0549a34672552 is communicating with a Tor entry node.",
         "Type": "UnauthorizedAccess:EC2/TorClient",
         "UpdatedAt": "2024-01-30T07:12:04.519Z"
@@ -6178,7 +6178,7 @@
                     }
                 ]
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 2,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-01-28T13:47:57.000Z",
@@ -6190,7 +6190,7 @@
                 "Type": "default"
             }
         },
-        "Severity": 5,
+        "Severity": 10,
         "Title": "The reconnaissance API DescribeStackEvents was invoked from an IP address on a custom threat list.",
         "Type": "Recon:IAMUser/MaliciousIPCaller.Custom",
         "UpdatedAt": "2024-01-28T14:00:47.036Z"
@@ -10532,7 +10532,7 @@
         },
         "SchemaVersion": "2.0",
         "Service": {
-            "Archived": false,
+            "Archived": true,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-01-14T14:37:20.624Z",
@@ -10607,7 +10607,7 @@
             },
             "status": false
         },
-        "Severity": 9,
+        "Severity": 10,
         "Title": "4 security risk(s) detected including EICAR-Test-File (not a virus) on EC2 instance i-080ffbb3199626e36.",
         "Type": "Execution:EC2/MaliciousFile",
         "UpdatedAt": "2024-01-14T14:37:20.624Z"

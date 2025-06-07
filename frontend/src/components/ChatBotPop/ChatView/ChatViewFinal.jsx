@@ -350,7 +350,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
     const [error, setError] = useState(null);
     const [deletingChatId, setDeletingChatId] = useState(null);
     const [currentChatId, setCurrentChatId] = useState(null);
-    const [showMenu, setShowMenu] = useState(false);
+    const [showMenu, setShowMenu] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
     const [pendingAlertData, setPendingAlertData] = useState(null);
     const [settingsMessage, setSettingsMessage] = useState(null);
@@ -359,8 +359,8 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
 
     // Add state for current alert ID
     const [currentAlertId, setCurrentAlertId] = useState(null);
-    const [inputAlertId, setInputAlertId] = useState('');
-    const [settingsValues, setSettingsValues] = useState({});
+    // const [inputAlertId, setInputAlertId] = useState('');
+    // const [settingsValues, setSettingsValues] = useState({});
 
     const menuOptions = [
         {
@@ -517,15 +517,21 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
                         timestamp: data.timestamp
                     },
                     {
-                        role: 'assistant',
-                        content: `What would you like to do next?
-
-1. 🔍 **Analyze Another Alert** - Analyze a different security alert
-2. 📘 **View Incident Playbook** - Follow predefined steps for this incident
-3. 💬 **Ask Questions** - Ask specific questions about this alert
-4. ⚙️ **Configure Settings** - Adjust your preferences
-
-Please select an option by typing its number or description.`,
+                        role: 'menu',
+                        content: (
+                            <div className="chat-menu-options">
+                                <div
+                                    className="chat-menu-option"
+                                    onClick={() => setShowMenu(true)}
+                                >
+                                    <div className="chat-menu-option-icon">🏠</div>
+                                    <div className="chat-menu-option-content">
+                                        <h3>Back to Main Menu</h3>
+                                        <p>Return to the main menu to select another option</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ),
                         timestamp: new Date().toLocaleTimeString()
                     }
                 ]);
@@ -542,21 +548,7 @@ Please select an option by typing its number or description.`,
         }
     };
 
-    const handleIncidentPlaybook = () => {
-        setMessages([{
-            role: 'assistant',
-            content: 'Please provide the incident details or alert you would like to create a playbook for.',
-            timestamp: new Date().toLocaleTimeString()
-        }]);
-    };
 
-    const handleAskQuestions = () => {
-        setMessages([{
-            role: 'assistant',
-            content: 'What specific questions do you have about the security alert?',
-            timestamp: new Date().toLocaleTimeString()
-        }]);
-    };
 
     const handleConfigureSettings = () => {
         setShowSettings(true);
@@ -601,8 +593,12 @@ Please select an option by typing its number or description.`,
         setShowMenu(false);
         if (option.id === 'settings') {
             handleConfigureSettings();
-        } else {
-            handleMessageSend(option.value);
+        } else if (option.id === 'alert-analysis') {
+            handleMessageSend("Please analyze this security alert and provide insights.");
+        } else if (option.id === 'playbook') {
+            handleMessageSend("Please help me create an incident playbook for this alert.");
+        } else if (option.id === 'general-chat') {
+            handleMessageSend("I'd like to discuss some security topics.");
         }
     };
 
@@ -745,6 +741,26 @@ Please select an option by typing its number or description.`,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 };
                 setMessages(prev => [...prev, assistantMessage]);
+
+                // Add menu button after every response
+                setMessages(prev => [...prev, {
+                    role: 'menu',
+                    content: (
+                        <div className="chat-menu-options">
+                            <div
+                                className="chat-menu-option"
+                                onClick={() => setShowMenu(true)}
+                            >
+                                <div className="chat-menu-option-icon">🏠</div>
+                                <div className="chat-menu-option-content">
+                                    <h3>Back to Main Menu</h3>
+                                    <p>Return to the main menu to select another option</p>
+                                </div>
+                            </div>
+                        </div>
+                    ),
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }]);
 
                 // Clear pending alert data after successful processing
                 if (pendingAlertData) {

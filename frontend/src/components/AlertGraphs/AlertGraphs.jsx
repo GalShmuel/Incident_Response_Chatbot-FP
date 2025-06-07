@@ -52,48 +52,16 @@ const MapComponent = ({ geoData }) => {
   return null;
 };
 
-const AlertGraphs = () => {
-  const [findings, setFindings] = useState([]);
+const AlertGraphs = ({ findings }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSeverityRanges, setSelectedSeverityRanges] = useState([]);
 
   useEffect(() => {
-    const fetchFindings = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/findings', {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        if (!response.data) {
-          throw new Error('No data received from server');
-        }
-        
-        setFindings(response.data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching findings:', err);
-        let errorMessage = 'Failed to load findings data';
-        
-        if (err.response) {
-          errorMessage = `Server error: ${err.response.status} - ${err.response.data?.message || 'Unknown error'}`;
-        } else if (err.request) {
-          errorMessage = 'No response from server. Please check if the backend is running.';
-        } else {
-          errorMessage = `Error: ${err.message}`;
-        }
-        
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFindings();
-  }, []);
+    if (findings) {
+      setLoading(false);
+    }
+  }, [findings]);
 
   if (loading) {
     return (
@@ -115,6 +83,16 @@ const AlertGraphs = () => {
             <li>Is the backend server running?</li>
             <li>Is the backend server running on port 5000?</li>
           </ul>
+        </div>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(findings)) {
+    return (
+      <div className="alert-graphs">
+        <div className="graph-container">
+          <h3>Error: Invalid findings data format</h3>
         </div>
       </div>
     );
@@ -273,35 +251,40 @@ const AlertGraphs = () => {
     }
 
     return (
-      <MapContainer 
-        center={[31.9642, 34.7876]} 
-        zoom={6} 
+      <MapContainer
+        center={[0, 0]}
+        zoom={2}
         style={{ height: '400px', width: '100%' }}
       >
-        <TileLayer 
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-          attribution="&copy; OpenStreetMap contributors" 
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <MapComponent geoData={geoData} />
-        {Object.values(geoData).map((loc, i) => (
-          <Marker 
-            key={`${loc.lat}-${loc.lon}-${i}`}
-            position={[loc.lat, loc.lon]} 
-            icon={createSeverityIcon(loc.severity)}
+        {Object.entries(geoData).map(([key, data]) => (
+          <Marker
+            key={key}
+            position={[data.lat, data.lon]}
+            icon={createSeverityIcon(data.severity)}
           >
             <Popup>
-              <div>
-                <h4>{loc.city}, {loc.country}</h4>
-                <p>Attack Count: {loc.count}</p>
-                <p>Severity: {loc.severity}/10</p>
-                <p>Action Type: {loc.actionType}</p>
-                <p>Organization: {loc.organization}</p>
-                <p>IP Addresses:</p>
-                <ul>{Array.from(loc.ips).map((ip, j) => <li key={j}>{ip}</li>)}</ul>
+              <div className="map-popup">
+                <h4>Location Details</h4>
+                <p><strong>Country:</strong> {data.country}</p>
+                <p><strong>City:</strong> {data.city}</p>
+                <p><strong>Organization:</strong> {data.organization}</p>
+                <p><strong>Action Type:</strong> {data.actionType}</p>
+                <p><strong>Alert Count:</strong> {data.count}</p>
+                <p><strong>IP Addresses:</strong></p>
+                <ul>
+                  {Array.from(data.ips).map(ip => (
+                    <li key={ip}>{ip}</li>
+                  ))}
+                </ul>
               </div>
             </Popup>
           </Marker>
         ))}
+        <MapComponent geoData={geoData} />
       </MapContainer>
     );
   };

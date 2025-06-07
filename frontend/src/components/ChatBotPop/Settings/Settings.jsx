@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Settings.css';
+import { formatDate } from '../../../utils/dateUtils';
 
 const Settings = ({ pendingAlertData, onSaveSettings }) => {
     const [selectedSetting, setSelectedSetting] = useState(null);
@@ -89,9 +90,15 @@ const Settings = ({ pendingAlertData, onSaveSettings }) => {
     const handleSaveSettings = async (category) => {
         if (category.id === 'alert-management') {
             try {
+                // Get current findings
                 const response = await fetch('http://localhost:5000/api/findings');
                 if (!response.ok) throw new Error('Failed to fetch findings');
-                const findings = await response.json();
+                const data = await response.json();
+
+                // Ensure we have valid findings data
+                if (!data || !Array.isArray(data.findings)) {
+                    throw new Error('Invalid findings data received');
+                }
 
                 const alertId = settingsValues.alertId?.trim();
                 const newSeverity = parseInt(settingsValues.severity);
@@ -106,7 +113,7 @@ const Settings = ({ pendingAlertData, onSaveSettings }) => {
                 }
 
                 // Validate that the alert ID exists in the findings
-                const findingExists = findings.some(f => f.Id === alertId);
+                const findingExists = data.findings.some(f => f.Id === alertId);
                 if (!findingExists) {
                     onSaveSettings({
                         success: false,
@@ -189,12 +196,152 @@ const Settings = ({ pendingAlertData, onSaveSettings }) => {
                 success: true,
                 message: 'Dashboard settings have been updated successfully.'
             });
+        } else if (category.id === 'display') {
+            // Save display settings to localStorage
+            const displaySettings = {
+                font: settingsValues.font,
+                timezone: settingsValues.timezone,
+                date: settingsValues.date
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('displaySettings', JSON.stringify(displaySettings));
+            
+            // Apply font size
+            if (settingsValues.font) {
+                const fontSizeMap = {
+                    'Small': '14px',
+                    'Medium': '16px',
+                    'Large': '18px'
+                };
+                document.documentElement.style.setProperty('--base-font-size', fontSizeMap[settingsValues.font]);
+            }
+
+            // Apply timezone
+            if (settingsValues.timezone) {
+                let timezone;
+                switch (settingsValues.timezone) {
+                    case 'UTC':
+                        timezone = 'UTC';
+                        break;
+                    case 'Local':
+                        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        break;
+                    case 'Custom':
+                        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        break;
+                    default:
+                        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                }
+                localStorage.setItem('userTimezone', timezone);
+            }
+
+            // Apply date format
+            if (settingsValues.date) {
+                const dateFormatMap = {
+                    'MM/DD/YYYY': 'MM/DD/YYYY',
+                    'DD/MM/YYYY': 'DD/MM/YYYY',
+                    'YYYY-MM-DD': 'YYYY-MM-DD'
+                };
+                localStorage.setItem('dateFormat', dateFormatMap[settingsValues.date]);
+            }
+
+            // Dispatch a custom event to notify other components about the display changes
+            window.dispatchEvent(new CustomEvent('displaySettingsChanged', {
+                detail: displaySettings
+            }));
+
+            onSaveSettings({
+                success: true,
+                message: 'Display settings have been updated successfully.'
+            });
         } else {
             onSaveSettings({
                 success: true,
                 message: `${category.title} settings have been updated successfully.`
             });
         }
+    };
+
+    // Add this useEffect to load display settings on component mount
+    useEffect(() => {
+        const savedDisplaySettings = localStorage.getItem('displaySettings');
+        if (savedDisplaySettings) {
+            const parsedSettings = JSON.parse(savedDisplaySettings);
+            setSettingsValues(prev => ({
+                ...prev,
+                ...parsedSettings
+            }));
+
+            // Apply saved settings
+            if (parsedSettings.font) {
+                const fontSizeMap = {
+                    'Small': '14px',
+                    'Medium': '16px',
+                    'Large': '18px'
+                };
+                document.documentElement.style.setProperty('--base-font-size', fontSizeMap[parsedSettings.font]);
+            }
+        }
+    }, []);
+
+    // Add preview section for display settings
+    const renderDisplayPreview = () => {
+        if (selectedSetting?.id !== 'display') return null;
+
+        const currentDate = new Date();
+        const previewText = "This is a preview of the selected font size.";
+        
+        // Get the current date format from settings or default
+        const currentFormat = settingsValues.date || 'MM/DD/YYYY';
+        const timezone = settingsValues.timezone || 'Local';
+        
+        // Format the date according to the selected format
+        let formattedDate;
+        const options = {
+            timeZone: timezone === 'UTC' ? 'UTC' : undefined,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+
+        const dateObj = new Intl.DateTimeFormat('en-US', options).format(currentDate);
+        const [datePart, timePart] = dateObj.split(', ');
+
+        switch (currentFormat) {
+            case 'DD/MM/YYYY':
+                const [month, day, year] = datePart.split('/');
+                formattedDate = `${day}/${month}/${year} ${timePart}`;
+                break;
+            case 'YYYY-MM-DD':
+                const [m, d, y] = datePart.split('/');
+                formattedDate = `${y}-${m}-${d} ${timePart}`;
+                break;
+            default:
+                formattedDate = `${datePart} ${timePart}`;
+        }
+
+        return (
+            <div className="display-preview">
+                <h3>Preview</h3>
+                <div className="preview-content">
+                    <div className="preview-text" style={{ fontSize: settingsValues.font === 'Small' ? '14px' : 
+                                                                    settingsValues.font === 'Large' ? '18px' : '16px' }}>
+                        {previewText}
+                    </div>
+                    <div className="preview-date">
+                        <strong>Date Format:</strong> {formattedDate}
+                    </div>
+                    <div className="preview-timezone">
+                        <strong>Timezone:</strong> {timezone}
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     if (!selectedSetting) {
@@ -278,6 +425,7 @@ const Settings = ({ pendingAlertData, onSaveSettings }) => {
                     )}
                 </div>
             ))}
+            {renderDisplayPreview()}
             <div className="settings-actions">
                 <button className="save-settings" onClick={() => handleSaveSettings(selectedSetting)}>
                     Save Changes

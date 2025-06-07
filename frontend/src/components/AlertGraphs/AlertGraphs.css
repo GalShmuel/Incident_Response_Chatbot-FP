@@ -49,7 +49,7 @@
 }
 
 .severity-filter:hover {
-    background-color: var(--hover-bg);
+    background-color: var(--hover);
     border-color: var(--border-color);
 }
 

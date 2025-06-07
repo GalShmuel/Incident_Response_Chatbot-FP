@@ -463,23 +463,91 @@ app.get('/api/findings', (req, res) => {
     console.log('\n📥 ===== FINDINGS REQUEST =====');
     console.log('📅 Time:', new Date().toISOString());
     console.log('🔍 Request Type: GET all findings');
+    console.log('🔍 Query Parameters:', req.query);
     try {
         const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
-        const findings = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
-        console.log(`✅ Success: Found ${findings.length} findings`);
-        console.log('📊 Findings Summary:');
-        console.log('- Total findings:', findings.length);
-        console.log('- Severity distribution:', findings.reduce((acc, f) => {
+        const allFindings = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
+        
+        // Ensure allFindings is an array
+        if (!Array.isArray(allFindings)) {
+            throw new Error('Findings data is not in the expected format');
+        }
+
+        // Calculate severity distribution for all findings
+        const severityDistribution = allFindings.reduce((acc, f) => {
             acc[f.Severity] = (acc[f.Severity] || 0) + 1;
             return acc;
-        }, {}));
-        console.log('- Archived count:', findings.filter(f => f.Service.Archived).length);
-        console.log('📤 Sending response...');
-        res.json(findings);
+        }, {});
+
+        // Calculate open and resolved counts
+        const openCount = allFindings.filter(f => !f.Service?.Archived).length;
+        const resolvedCount = allFindings.filter(f => f.Service?.Archived).length;
+
+        console.log('📊 Initial Distribution:');
+        console.log('- Total findings:', allFindings.length);
+        console.log('- Open findings:', openCount);
+        console.log('- Resolved findings:', resolvedCount);
+        console.log('- Severity distribution:', severityDistribution);
+        
+        // Filter by status (open/resolved)
+        let filteredFindings = allFindings;
+        if (req.query.status) {
+            const isOpen = req.query.status === 'open';
+            filteredFindings = allFindings.filter(finding => 
+                isOpen ? !finding.Service?.Archived : finding.Service?.Archived
+            );
+            console.log(`🔍 Filtered by status: ${req.query.status}`);
+            console.log(`- After status filter: ${filteredFindings.length} findings`);
+        }
+        
+        // Apply severity filter if provided
+        if (req.query.severity) {
+            const severities = req.query.severity.split(',').map(s => parseInt(s));
+            filteredFindings = filteredFindings.filter(finding => severities.includes(finding.Severity));
+            console.log(`🔍 Filtered by severities: ${severities.join(', ')}`);
+            console.log(`- After severity filter: ${filteredFindings.length} findings`);
+        }
+
+        // Ensure filteredFindings is an array
+        if (!Array.isArray(filteredFindings)) {
+            filteredFindings = [];
+        }
+
+        // Log final distribution
+        const finalSeverityDistribution = filteredFindings.reduce((acc, f) => {
+            acc[f.Severity] = (acc[f.Severity] || 0) + 1;
+            return acc;
+        }, {});
+
+        console.log('📊 Final Distribution:');
+        console.log('- Filtered findings:', filteredFindings.length);
+        console.log('- Severity distribution:', finalSeverityDistribution);
+        
+        // Always return the same response structure
+        res.json({
+            findings: filteredFindings,
+            totalFindings: allFindings,
+            stats: {
+                total: allFindings.length,
+                open: openCount,
+                resolved: resolvedCount,
+                severityDistribution: severityDistribution
+            }
+        });
     } catch (error) {
         console.error('❌ Error reading findings:', error);
         console.error('Stack trace:', error.stack);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ 
+            message: error.message,
+            findings: [],
+            totalFindings: [],
+            stats: {
+                total: 0,
+                open: 0,
+                resolved: 0,
+                severityDistribution: {}
+            }
+        });
     }
     console.log('📥 ===== END FINDINGS REQUEST =====\n');
 });

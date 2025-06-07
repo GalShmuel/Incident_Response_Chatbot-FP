@@ -77,12 +77,12 @@
 }
 
 .severity-filter:not(:disabled):hover {
-  background-color: var(--hover-bg);
+  background-color: var(--hover);
   border-color: var(--primary-color);
 }
 
 .severity-filter.active {
-  background-color: var(--secondary-color);
+  background-color: var(--primary-color);
   border-color: var(--primary-color);
   color: var(--text-color);
   font-weight: 500;

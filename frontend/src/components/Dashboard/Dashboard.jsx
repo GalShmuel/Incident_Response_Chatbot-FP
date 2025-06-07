@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import Alerts from '../Alerts/Alerts';
 import AlertGraphs from '../AlertGraphs/AlertGraphs';
@@ -19,6 +19,24 @@ const Dashboard = () => {
     const handleFindingsChange = (findings) => {
         setCurrentFindings(findings);
     };
+
+    // Fetch findings for graphs
+    useEffect(() => {
+        const fetchFindings = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/findings');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch findings');
+                }
+                const data = await response.json();
+                setCurrentFindings(data.findings || []);
+            } catch (error) {
+                console.error('Error fetching findings for graphs:', error);
+            }
+        };
+
+        fetchFindings();
+    }, []);
 
     return (
         <div className="dashboard">

@@ -1,111 +1,115 @@
 .menu-container {
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    box-sizing: border-box;
-    min-width: 120px;
-    min-height: 200px;
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
+    padding: 0.9rem;
     display: flex;
     flex-direction: column;
-    background: var(--menu-bg);
-    z-index: 1000;
+    background: var(--bg-color);
+    box-sizing: border-box;
 }
 
 .menu-header {
-    text-align: center;
-    margin: 0;
-    padding: 0.8rem;
-    flex-shrink: 0;
-    background: var(--menu-hover);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
     border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.menu-header-content {
+    flex: 1;
 }
 
 .menu-header h2 {
-    font-size: 1rem;
-    margin: 0 0 0.3rem 0;
+    margin: 0 0 0.25rem 0;
     color: var(--text-color);
-    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 .menu-header p {
-    color: var(--text-color);
-    font-size: 0.8rem;
     margin: 0;
-    opacity: 0.7;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.menu-exit-button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 1rem;
+}
+
+.menu-exit-button:hover {
+    background: var(--hover-bg);
+    color: var(--text-color);
+    transform: scale(1.1);
 }
 
 .menu-options {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: var(--menu-hover);
+    gap: 0.4rem;
     flex: 1;
-    min-height: 0;
 }
 
 .menu-option {
-    display: flex;
-    align-items: flex-start;
-    padding: 0.8rem;
-    background: var(--menu-bg);
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
+    padding: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
     flex-shrink: 0;
-    box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .menu-option:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px var(--shadow-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border-color: var(--primary-color);
 }
 
 .menu-option-icon {
-    font-size: 1.5rem;
-    margin-right: 0.8rem;
+    font-size: 1.2rem;
+    background: var(--hover-bg);
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 2rem;
-    height: 2rem;
-    background: var(--menu-hover);
-    border-radius: 6px;
-    padding: 0.3rem;
-    transition: all 0.2s ease;
-}
-
-.menu-option:hover .menu-option-icon {
-    background: var(--menu-active);
-    transform: scale(1.05);
+    border-radius: 8px;
+    flex-shrink: 0;
 }
 
 .menu-option-content {
     flex: 1;
+    min-width: 0;
 }
 
 .menu-option-content h3 {
-    margin: 0 0 0.3rem 0;
-    font-size: 0.9rem;
+    margin: 0 0 0.25rem 0;
     color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .menu-option-content p {
-    font-size: 0.8rem;
-    color: var(--text-color);
-    padding: 0;
     margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
     line-height: 1.2;
-    opacity: 0.7;
 }
 
 /* Animation for menu options */
@@ -129,46 +133,46 @@
 .menu-option:nth-child(3) { animation-delay: 0.3s; }
 .menu-option:nth-child(4) { animation-delay: 0.4s; }
 
-/* Ensure menu stays visible in chatbot container */
-:root {
-    --chatbot-min-width: 120px;
-    --chatbot-min-height: 200px;
-}
-
+/* Container sizing */
 .menu-container {
-    min-width: var(--chatbot-min-width);
-    min-height: var(--chatbot-min-height);
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    .menu-container {
+        padding: 0.4rem;
+    }
+
     .menu-header {
-        padding: 0.6rem;
+        margin-bottom: 0.4rem;
+        padding-bottom: 0.3rem;
     }
 
-    .menu-options {
-        padding: 0.3rem;
-        gap: 0.4rem;
-    }
-
-    .menu-option {
-        padding: 0.6rem;
-    }
-
-    .menu-option-icon {
-        font-size: 1.3rem;
-        min-width: 1.8rem;
-        height: 1.8rem;
-        margin-right: 0.6rem;
-    }
-
-    .menu-option-content h3 {
+    .menu-header h2 {
         font-size: 0.85rem;
     }
 
-    .menu-option-content p {
+    .menu-header p {
+        font-size: 0.65rem;
+    }
+
+    .menu-option {
+        padding: 0.4rem;
+    }
+
+    .menu-option-icon {
+        width: 22px;
+        height: 22px;
+        font-size: 0.9rem;
+    }
+
+    .menu-option-content h3 {
         font-size: 0.75rem;
+    }
+
+    .menu-option-content p {
+        font-size: 0.65rem;
     }
 } 

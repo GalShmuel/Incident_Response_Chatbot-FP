@@ -36,8 +36,10 @@ const Menu = ({ onSelect }) => {
     return (
         <div className="menu-container">
             <div className="menu-header">
-                <h2>What would you like to do?</h2>
-                <p>Select an option to get started</p>
+                <div className="menu-header-content">
+                    <h2>What would you like to do?</h2>
+                    <p>Select an option to get started</p>
+                </div>
             </div>
             <div className="menu-options">
                 {menuOptions.map((option) => (
@@ -46,9 +48,7 @@ const Menu = ({ onSelect }) => {
                         className="menu-option"
                         onClick={() => onSelect(option)}
                     >
-                        <div className="menu-option-icon">
-                            {option.icon}
-                        </div>
+                        <div className="menu-option-icon">{option.icon}</div>
                         <div className="menu-option-content">
                             <h3>{option.title}</h3>
                             <p>{option.description}</p>
@@ -60,4 +60,4 @@ const Menu = ({ onSelect }) => {
     );
 };
 
-export default Menu; 
+export default Menu;

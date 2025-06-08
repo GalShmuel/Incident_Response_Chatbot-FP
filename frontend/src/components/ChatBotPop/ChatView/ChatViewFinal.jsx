@@ -743,7 +743,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
         console.log('Rendering Menu component');
         return (
             <div className="ChatView">
-                <div className="ChatMessages">
+                <div className="ChatMessages" style={{ height: 'calc(100% - 60px)', overflow: 'hidden' }}>
                     <Menu onSelect={handleMenuSelect} />
                 </div>
                 <div className="ChatInputArea">

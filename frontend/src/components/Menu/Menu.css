@@ -1,7 +1,7 @@
 .menu-container {
     position: relative;
     inset: 0;
-    padding: 0.9rem;
+    padding: 0.3rem;
     display: flex;
     flex-direction: column;
     background: var(--bg-color);
@@ -33,7 +33,7 @@
 .menu-header p {
     margin: 0;
     color: var(--text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 }
 
 .menu-exit-button {
@@ -107,7 +107,7 @@
 .menu-option-content h3 {
     margin: 0 0 0.25rem 0;
     color: var(--text-color);
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
@@ -134,11 +134,11 @@
     }
 
     .menu-header p {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
     }
 
     .menu-option {
-        padding: 0.4rem;
+        padding: 0.8rem;
     }
 
     .menu-option-icon {
@@ -148,11 +148,11 @@
     }
 
     .menu-option-content h3 {
-        font-size: 0.75rem;
+        font-size: 0.9rem;
     }
 
     .menu-option-content p {
-        font-size: 0.65rem;
+        font-size: 0.8rem;
     }
 }
 

@@ -627,7 +627,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
             
             setMessages(chatData.messages.map(msg => ({
                 ...msg,
-                timestamp: new Date(msg.timestamp).toLocaleTimeString()
+                timestamp: msg.timestamp // Use the timestamp directly without parsing
             })));
             setCurrentChatId(chat._id);
             setShowRecentChats(false);

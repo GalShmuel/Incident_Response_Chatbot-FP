@@ -1134,21 +1134,21 @@ pre.code-block.language-bash span.prompt {
     margin-right: 0.25em;
 }
 
-.chat-menu {
+/* .chat-menu {
     padding: 1rem;
     overflow-y: auto;
     height: 100%;
     box-sizing: border-box;
-}
+} */
 
-.chat-menu h2 {
+/* .chat-menu h2 {
     font-size: 1.1rem;
     margin: 0 0 0.6rem 0;
     color: #374151;
     text-align: center;
     flex-shrink: 0;
-}
-
+} */
+/* 
 .menu-options {
     display: flex;
     flex-direction: column;
@@ -1196,8 +1196,8 @@ pre.code-block.language-bash span.prompt {
     min-width: 0;
     overflow: hidden;
     padding-right: 0.2rem; /* Add small padding to prevent text from touching the border */
-}
 
+/* 
 .menu-option-content h3 {
     font-size: 0.9rem;
     margin: 0 0 0.2rem 0;
@@ -1205,9 +1205,9 @@ pre.code-block.language-bash span.prompt {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
+} */
 
-.menu-option-content p {
+/* .menu-option-content p {
     font-size: 0.75rem;
     margin: 0;
     color: #6b7280;
@@ -1216,7 +1216,7 @@ pre.code-block.language-bash span.prompt {
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.2;
-}
+} */
 
 .chat-heading {
     color: #2c3e50;
@@ -1405,7 +1405,7 @@ h4.chat-heading {
     margin-top: 0;
     border-top: 1px solid #3d3d3d;
 }
-
+/* 
 .chat-menu-options {
     display: flex;
     flex-direction: column;
@@ -1455,7 +1455,7 @@ h4.chat-heading {
     margin: 0;
     font-size: 0.875rem;
     color: #6c757d;
-}
+} */
 
 /* Add responsive styles */
 @media (max-width: 768px) {
@@ -1816,4 +1816,6 @@ h4.chat-heading {
         min-width: 60px;
     }
 }
+
+/* Menu styles have been moved to Menu.css */
   

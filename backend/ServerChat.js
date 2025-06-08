@@ -458,15 +458,81 @@ app.delete('/api/chats/:chatId', async (req, res) => {
     }
 });
 
-// Get all findings
+// Add at the top of the file, after the requires
+let findingsCache = {
+    data: null,
+    lastModified: null
+};
+
+// Add SSE clients tracking
+let sseClients = new Set();
+
+// Add SSE endpoint
+app.get('/api/findings/events', (req, res) => {
+    console.log('📡 New SSE client connected');
+    
+    // Set headers for SSE
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    });
+
+    // Send initial findings
+    const initialFindings = readFindings();
+    res.write(`data: ${JSON.stringify({ type: 'initial', findings: initialFindings })}\n\n`);
+
+    // Add this client to our set
+    sseClients.add(res);
+
+    // Remove client when they disconnect
+    req.on('close', () => {
+        console.log('📡 SSE client disconnected');
+        sseClients.delete(res);
+    });
+});
+
+// Function to notify all SSE clients of changes
+const notifyClients = (type, data) => {
+    const message = `data: ${JSON.stringify({ type, data })}\n\n`;
+    sseClients.forEach(client => {
+        client.write(message);
+    });
+};
+
+// Add file watcher setup
+const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
+
+// Function to read findings from file
+const readFindings = () => {
+    try {
+        const stats = fs.statSync(findingsPath);
+        const currentModified = stats.mtime.getTime();
+        
+        // Only read if file has changed
+        if (!findingsCache.data || !findingsCache.lastModified || currentModified > findingsCache.lastModified) {
+            console.log('📚 Reading findings from file - file has changed');
+            findingsCache.data = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
+            findingsCache.lastModified = currentModified;
+        } else {
+            console.log('📚 Using cached findings - file unchanged');
+        }
+        return findingsCache.data;
+    } catch (error) {
+        console.error('❌ Error reading findings:', error);
+        throw error;
+    }
+};
+
+// Modify the findings endpoint
 app.get('/api/findings', (req, res) => {
     console.log('\n📥 ===== FINDINGS REQUEST =====');
     console.log('📅 Time:', new Date().toISOString());
     console.log('🔍 Request Type: GET all findings');
     console.log('🔍 Query Parameters:', req.query);
+    
     try {
-        const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
-        const allFindings = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
+        const allFindings = readFindings();
         
         // Ensure allFindings is an array
         if (!Array.isArray(allFindings)) {
@@ -523,6 +589,10 @@ app.get('/api/findings', (req, res) => {
         console.log('- Filtered findings:', filteredFindings.length);
         console.log('- Severity distribution:', finalSeverityDistribution);
         
+        // Get the last modified time of the file
+        const stats = fs.statSync(findingsPath);
+        const lastModified = stats.mtime.getTime();
+        
         // Always return the same response structure
         res.json({
             findings: filteredFindings,
@@ -532,7 +602,8 @@ app.get('/api/findings', (req, res) => {
                 open: openCount,
                 resolved: resolvedCount,
                 severityDistribution: severityDistribution
-            }
+            },
+            lastModified: lastModified
         });
     } catch (error) {
         console.error('❌ Error reading findings:', error);
@@ -546,7 +617,8 @@ app.get('/api/findings', (req, res) => {
                 open: 0,
                 resolved: 0,
                 severityDistribution: {}
-            }
+            },
+            lastModified: null
         });
     }
     console.log('📥 ===== END FINDINGS REQUEST =====\n');
@@ -583,7 +655,7 @@ app.get('/api/findings/:id', (req, res) => {
     console.log('📥 ===== END SINGLE FINDING REQUEST =====\n');
 });
 
-// Update a specific finding by ID
+// Modify the update endpoints to notify clients
 app.put('/api/findings/:id', (req, res) => {
     console.log('\n📝 ===== UPDATE FINDING REQUEST =====');
     console.log('📅 Time:', new Date().toISOString());
@@ -630,6 +702,14 @@ app.put('/api/findings/:id', (req, res) => {
 
         // Write the updated findings back to the file
         fs.writeFileSync(findingsPath, JSON.stringify(findings, null, 4));
+        
+        // Invalidate the cache
+        findingsCache.data = null;
+        findingsCache.lastModified = null;
+
+        // Notify all connected clients of the update
+        notifyClients('update', { finding: findings[findingIndex] });
+        
         console.log('✅ Success: Updated the finding');
         console.log('📤 Sending response...');
         res.json({ message: 'Finding updated successfully', finding: findings[findingIndex] });
@@ -657,17 +737,13 @@ app.put('/api/findings', (req, res) => {
             return res.status(400).json({ message: 'Invalid findings format. Expected an array.' });
         }
 
-        // Log the changes
-        console.log('📊 Changes being made:');
-        console.log('- Total findings to update:', updatedFindings.length);
-        console.log('- Severity distribution:', updatedFindings.reduce((acc, f) => {
-            acc[f.Severity] = (acc[f.Severity] || 0) + 1;
-            return acc;
-        }, {}));
-        console.log('- Archived count:', updatedFindings.filter(f => f.Service.Archived).length);
-
         // Write the updated findings back to the file
         fs.writeFileSync(findingsPath, JSON.stringify(updatedFindings, null, 4));
+        
+        // Invalidate the cache
+        findingsCache.data = null;
+        findingsCache.lastModified = null;
+        
         console.log('✅ Success: Updated all findings');
         console.log('📤 Sending response...');
         res.json({ message: 'Findings updated successfully' });

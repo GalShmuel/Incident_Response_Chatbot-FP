@@ -341,13 +341,15 @@ const AlertGraphs = ({ findings }) => {
           </div>
 
           <div className="graph-container">
-            <h3>Severity Distribution (Pie)</h3>
-            <Pie data={severityPieData} options={options} />
-          </div>
-
-          <div className="graph-container">
-            <h3>Alerts Over Time</h3>
-            <Bar data={timeChartData} options={options} />
+            <h3>Alert Distribution</h3>
+            <div className="charts-container">
+              <div className="chart-wrapper">
+                <Pie data={severityPieData} options={options} />
+              </div>
+              <div className="chart-wrapper">
+                <Bar data={timeChartData} options={options} />
+              </div>
+            </div>
           </div>
         </>
       )}

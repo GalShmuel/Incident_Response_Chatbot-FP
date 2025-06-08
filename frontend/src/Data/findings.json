@@ -46,7 +46,7 @@
                     "AffectedResources": {}
                 }
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 6094,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2023-12-14T08:39:36.000Z",
@@ -186,7 +186,7 @@
                     }
                 }
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-02T06:27:15.000Z",
@@ -834,7 +834,7 @@
                     }
                 ]
             },
-            "Archived": true,
+            "Archived": false,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-01T14:19:09.000Z",
@@ -1351,7 +1351,7 @@
                     }
                 ]
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 1,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-01T14:09:05.000Z",
@@ -1479,7 +1479,7 @@
                 "Type": "default"
             }
         },
-        "Severity": 8,
+        "Severity": 5,
         "Title": "The resource discovery API ListObjects was invoked from a Tor exit node.",
         "Type": "Discovery:S3/TorIPCaller",
         "UpdatedAt": "2024-02-01T14:03:39.883Z"
@@ -1796,7 +1796,7 @@
                     }
                 }
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 4,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-02-01T12:39:01.000Z",
@@ -4472,7 +4472,7 @@
                 "Type": "default"
             }
         },
-        "Severity": 8,
+        "Severity": 3,
         "Title": "The EC2 instance i-07b596cf81adb4f7c is communicating with a Tor entry node.",
         "Type": "UnauthorizedAccess:EC2/TorClient",
         "UpdatedAt": "2024-01-30T07:56:40.984Z"
@@ -5118,7 +5118,7 @@
                     }
                 }
             },
-            "Archived": false,
+            "Archived": true,
             "Count": 2,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-01-29T15:32:48.000Z",
@@ -6178,7 +6178,7 @@
                     }
                 ]
             },
-            "Archived": true,
+            "Archived": false,
             "Count": 2,
             "DetectorId": "30c633bd64f8b1397dc98204528c06b6",
             "EventFirstSeen": "2024-01-28T13:47:57.000Z",

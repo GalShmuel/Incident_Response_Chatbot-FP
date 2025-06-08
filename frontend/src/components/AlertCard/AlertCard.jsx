@@ -5,19 +5,19 @@ import { FaExclamationTriangle, FaClock, FaCheckCircle, FaExclamationCircle, FaC
 import AlertDetails from './AlertDetails';
 
 const getSeverityColor = (severity) => {
-  switch (severity) {
-    case 1: return '#E0E0E0'; // Very Low - Light Gray
-    case 2: return '#D6CFC7'; // Low - Beige Gray
-    case 3: return '#F0D98C'; // Slightly Elevated - Pale Yellow
-    case 4: return '#F6C244'; // Moderate - Yellow
-    case 5: return '#FFB300'; // Medium - Vivid Amber
-    case 6: return '#FFA000'; // Medium-High - Deeper Amber
-    case 7: return '#FF8C42'; // High - Orange
-    case 8: return '#FF7043'; // Very High - Orange-Red
-    case 9: return '#FF4444'; // Critical - Red
-    case 10: return '#B22222'; // Severe - Dark Red
-    default: return '#F5F5F5'; // Default - Neutral Gray
-  }
+  const colors = {
+    1: '#00C851',  // Bright Green
+    2: '#7CB342',  // Light Green
+    3: '#CDDC39',  // Lime
+    4: '#FFEB3B',  // Yellow
+    5: '#FFC107',  // Amber
+    6: '#FF9800',  // Orange
+    7: '#FF5722',  // Deep Orange
+    8: '#F44336',  // Red
+    9: '#D32F2F',  // Dark Red
+    10: '#B22222'  // Firebrick
+  };
+  return colors[severity] || '#00C851';
 };
 
 const getSeverityLabel = (severity) => {
@@ -65,6 +65,7 @@ const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
   const [isResolving, setIsResolving] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [selectedSeverity, setSelectedSeverity] = useState(finding.Severity);
   const statusRef = React.useRef(null);
 
   const handleMouseEnter = (e) => {
@@ -96,7 +97,7 @@ const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
     // Update status after a short delay
     setTimeout(() => {
       setCurrentStatus(newStatus);
-      onStatusChange(finding.Id, newStatus === 'resolved' ? 'closed' : 'open');
+      onStatusChange(finding.Id, newStatus === 'resolved' ? 'closed' : 'open', selectedSeverity);
       
       if (statusIcon) {
         statusIcon.classList.remove('exiting');
@@ -114,18 +115,25 @@ const AlertCard = ({ finding, onStatusChange, onChatOpen }) => {
     }, 300);
   };
 
+  const handleSeverityChange = (e) => {
+    e.stopPropagation(); // Prevent card click when changing severity
+    const newSeverity = parseInt(e.target.value);
+    setSelectedSeverity(newSeverity);
+    onStatusChange(finding.Id, currentStatus === 'resolved' ? 'closed' : 'open', newSeverity);
+  };
+
   const handleCardClick = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const severityColor = getSeverityColor(finding.Severity);
-  const severityLabel = getSeverityLabel(finding.Severity);
+  const severityColor = getSeverityColor(selectedSeverity);
+  const severityLabel = getSeverityLabel(selectedSeverity);
 
   return (
     <>
       <div className="alert-card-wrapper">
         <div 
-          className={`alert-card ${isResolving ? 'resolving' : ''}`}
+          className={`alert-card ${isResolving ? 'resolving' : ''} ${isExpanded ? 'expanded' : ''}`}
           onClick={handleCardClick}
           style={{ cursor: 'pointer' }}
         >

@@ -12,6 +12,7 @@ const Alerts = ({ onAlertClick }) => {
   const [selectedStatus, setSelectedStatus] = useState('open');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const prevSentFindings = useRef(null);
+  const eventSourceRef = useRef(null);
 
   // Sort findings by severity
   const sortFindingsBySeverity = (findings) => {
@@ -22,60 +23,85 @@ const Alerts = ({ onAlertClick }) => {
     });
   };
 
-  // Fetch alerts with filters
-  const fetchAlerts = useCallback(async (showLoading = true) => {
-    try {
-      if (showLoading) {
-        setLoading(true);
-      }
-      setError(null);
-
-      const params = new URLSearchParams();
-      if (selectedSeverities.length > 0) {
-        params.append('severity', selectedSeverities.join(','));
-      }
-      params.append('status', selectedStatus);
-      
-      const response = await fetch(`http://localhost:5000/api/findings?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch findings');
-      }
-
-      const data = await response.json();
-      const sortedData = sortFindingsBySeverity(data.findings);
-      const sortedTotalData = sortFindingsBySeverity(data.totalFindings);
-      
-      // Smooth transition for updates
-      setIsRefreshing(true);
-      setAllFindings(sortedTotalData);
-      setDisplayedFindings(sortedData);
-
-      // Reset refreshing state after a short delay
-      setTimeout(() => {
-        setIsRefreshing(false);
-      }, 300);
-    } catch (err) {
-      console.error('Error fetching alerts:', err);
-      setError(err.message);
-    } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
+  // Apply filters to findings
+  const applyFilters = useCallback((findings) => {
+    let filtered = [...findings];
+    
+    // Apply severity filter
+    if (selectedSeverities.length > 0) {
+      filtered = filtered.filter(finding => selectedSeverities.includes(finding.Severity));
     }
+    
+    // Apply status filter
+    filtered = filtered.filter(finding => 
+      selectedStatus === 'open' ? !finding.Service?.Archived : finding.Service?.Archived
+    );
+    
+    return sortFindingsBySeverity(filtered);
   }, [selectedSeverities, selectedStatus]);
 
-  // Initial fetch and filter changes
-  useEffect(() => {
-    fetchAlerts(true);
-  }, [fetchAlerts]);
+  // Handle SSE events
+  const handleSSEEvent = useCallback((event) => {
+    try {
+      const data = JSON.parse(event.data);
+      
+      switch (data.type) {
+        case 'initial':
+          setAllFindings(sortFindingsBySeverity(data.findings));
+          setDisplayedFindings(applyFilters(data.findings));
+          setLoading(false);
+          break;
+          
+        case 'update':
+          setAllFindings(prevFindings => {
+            const updatedFindings = prevFindings.map(finding => 
+              finding.Id === data.data.finding.Id ? data.data.finding : finding
+            );
+            const sortedFindings = sortFindingsBySeverity(updatedFindings);
+            setDisplayedFindings(applyFilters(sortedFindings));
+            return sortedFindings;
+          });
+          break;
+          
+        default:
+          console.warn('Unknown SSE event type:', data.type);
+      }
+    } catch (error) {
+      console.error('Error handling SSE event:', error);
+    }
+  }, [applyFilters]);
 
-  // Set up periodic refresh
+  // Set up SSE connection
   useEffect(() => {
-    const refreshInterval = setInterval(() => {
-      fetchAlerts(false); // Don't show loading state for periodic refreshes
-    }, 5000);
-    return () => clearInterval(refreshInterval);
-  }, [fetchAlerts]);
+    // Clean up any existing connection
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    // Create new SSE connection
+    const eventSource = new EventSource('http://localhost:5000/api/findings/events');
+    eventSourceRef.current = eventSource;
+
+    // Set up event handlers
+    eventSource.onmessage = handleSSEEvent;
+    eventSource.onerror = (error) => {
+      console.error('SSE Error:', error);
+      setError('Lost connection to server. Please refresh the page.');
+      eventSource.close();
+    };
+
+    // Clean up on unmount
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, [handleSSEEvent]);
+
+  // Update displayed findings when filters change
+  useEffect(() => {
+    setDisplayedFindings(applyFilters(allFindings));
+  }, [allFindings, applyFilters]);
 
   // Handle severity filter change
   const handleSeverityChange = (severities) => {
@@ -88,7 +114,7 @@ const Alerts = ({ onAlertClick }) => {
   };
 
   // Handle alert status change
-  const handleAlertStatusChange = async (alertId, newStatus) => {
+  const handleAlertStatusChange = async (alertId, newStatus, newSeverity) => {
     try {
       const response = await fetch(`http://localhost:5000/api/findings/${alertId}`, {
         method: 'PUT',
@@ -96,6 +122,7 @@ const Alerts = ({ onAlertClick }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          Severity: newSeverity,
           Service: {
             Archived: newStatus === 'closed'
           }
@@ -106,24 +133,7 @@ const Alerts = ({ onAlertClick }) => {
         throw new Error('Failed to update alert status');
       }
 
-      // Update local state immediately
-      setAllFindings(prevFindings => {
-        const updatedFindings = prevFindings.map(finding => 
-          finding.Id === alertId 
-            ? {
-                ...finding,
-                Service: {
-                  ...finding.Service,
-                  Archived: newStatus === 'closed'
-                }
-              }
-            : finding
-        );
-        return sortFindingsBySeverity(updatedFindings);
-      });
-
-      // Trigger a smooth refresh
-      fetchAlerts(false);
+      // The SSE connection will handle the update automatically
     } catch (err) {
       console.error('Error updating alert status:', err);
       setError(err.message);
@@ -137,10 +147,6 @@ const Alerts = ({ onAlertClick }) => {
   
   const openCount = filteredBySeverity.filter(f => !f.Service?.Archived).length;
   const resolvedCount = filteredBySeverity.filter(f => f.Service?.Archived).length;
-
-  // if (loading) {
-  //   return <div className="loading">Loading alerts...</div>;
-  // }
 
   if (error) {
     return <div className="error">Error: {error}</div>;

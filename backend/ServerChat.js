@@ -194,17 +194,32 @@ const handleConfigureSettings = () => {
 
 // Regular chat endpoint
 app.post('/api/chat', async (req, res) => {
-    console.log('\n🔄 Processing chat request...');
     try {
         const { message, chatId, alertData } = req.body;
-        console.log('📝 Message:', message);
-        console.log('🔍 Chat ID:', chatId);
-        console.log('🚨 Alert Data:', alertData);
-        
-        if (!message || message.trim() === '') {
-            console.log('❌ Empty message');
-            return res.status(400).json({ error: 'Message is required' });
+        console.log('Received message:', message);
+        console.log('Alert data:', alertData);
+
+        // Check if the user is asking for the raw JSON alert data
+        if (message.toLowerCase().includes('send me the alert json') || 
+            message.toLowerCase().includes('show me the alert json') ||
+            message.toLowerCase().includes('get the alert json')) {
+            if (alertData) {
+                return res.json({
+                    message: `Here is the raw alert data:\n\`\`\`json\n${JSON.stringify(alertData, null, 2)}\n\`\`\``,
+                    timestamp: new Date().toLocaleTimeString(),
+                    chatId: chatId
+                });
+            } else {
+                return res.json({
+                    message: "I don't have any alert data to show you. Please analyze an alert first.",
+                    timestamp: new Date().toLocaleTimeString(),
+                    chatId: chatId
+                });
+            }
         }
+
+        // Rest of the existing code for handling other types of messages
+        const messages = [];
 
         // Get or create chat
         let chat;
@@ -272,10 +287,11 @@ app.post('/api/chat', async (req, res) => {
         console.log('💬 Added user message to chat');
 
         // Prepare messages for OpenAI including history
-        let messages = [
+        messages = [
             {
                 role: 'system',
                 content: `You are a TIER1 SOC Analyst specialized in analyzing AWS GuardDuty findings.
+                       You are currently discussing Alert ID: ${alertData?.displayData?.id || alertData?.Id || 'No specific alert'}.
                        Provide clear and concise responses to security-related questions.
                        Always maintain a professional and clear communication style.
                        If analyzing an alert, focus on:
@@ -284,7 +300,8 @@ app.post('/api/chat', async (req, res) => {
                        3. Key security concerns
                        4. Relevant AWS GuardDuty context
                        If the user has additional questions about the playbook, provide detailed answers.
-                       If the user indicates they have no more questions, guide them back to the main menu.`
+                       If the user indicates they have no more questions, guide them back to the main menu.
+                       IMPORTANT: Always reference the specific Alert ID in your responses unless the user explicitly asks about a different alert or general security topics.`
             }
         ];
 
@@ -294,6 +311,27 @@ app.post('/api/chat', async (req, res) => {
             content: msg.content
         })));
         console.log('📚 Added chat history to messages');
+
+        // Check if this is a playbook request
+        const isPlaybookRequest = menuOption.includes('playbook') || menuOption.includes('incident');
+        if (isPlaybookRequest) {
+            messages[0].content = `You are a cybersecurity incident response assistant. 
+                You are currently discussing Alert ID: ${alertData?.displayData?.id || alertData?.Id || 'No specific alert'}.
+                When analyzing a security alert or log, follow these steps:
+                1. Analyze the logs for potential security findings.
+                2. Follow standard incident response playbooks.
+                3. Provide step-by-step guidance based on the logs.
+                4. Include relevant security best practices.
+                5. Suggest appropriate tools and commands for investigation and mitigation.
+                6. Explain the reasoning behind each step you take.
+                7. Highlight any critical findings and potential risks.
+                8. Provide remediation steps when applicable.
+                9. Consider the severity level of the alert in your response.
+                10. Prioritize responses based on severity levels:
+                    - Severe and Critical alerts require immediate attention.
+                IMPORTANT: Always reference the specific Alert ID in your responses unless the user explicitly asks about a different alert or general security topics.
+                After presenting the playbook, ask the user: "Do you have any additional questions about the incident response playbook? (Yes/No)"`;
+        }
 
         console.log('🤖 Sending request to OpenAI...');
         console.log('📤 Request payload:', JSON.stringify({

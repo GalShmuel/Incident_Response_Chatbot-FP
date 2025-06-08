@@ -355,6 +355,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
     const [settingsMessage, setSettingsMessage] = useState(null);
     const inactivityTimerRef = useRef(null);
     const [selectedSetting, setSelectedSetting] = useState(null);
+    const [savedAlertData, setSavedAlertData] = useState(null);
 
     console.log('ChatViewFinal render - showMenu:', showMenu, 'showRecentChats:', showRecentChats);
 
@@ -390,6 +391,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
     useEffect(() => {
         if (alertData) {
             setPendingAlertData(alertData);
+            setSavedAlertData(alertData); // Save the alert data
             setShowMenu(true);
         }
     }, [alertData]);
@@ -670,7 +672,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                 body: JSON.stringify({ 
                     message: content,
                     chatId: currentChatId,
-                    alertData: pendingAlertData
+                    alertData: savedAlertData || pendingAlertData // Use saved alert data if available
                 })
             });
 
@@ -704,7 +706,13 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                         <div className="chat-menu-options">
                             <div
                                 className="chat-menu-option"
-                                onClick={() => setShowMenu(true)}
+                                onClick={() => {
+                                    setShowMenu(true);
+                                    // Preserve the alert data when returning to menu
+                                    if (savedAlertData) {
+                                        setPendingAlertData(savedAlertData);
+                                    }
+                                }}
                             >
                                 <div className="chat-menu-option-icon">🏠</div>
                                 <div className="chat-menu-option-content">
@@ -717,10 +725,8 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
 
-                // Clear pending alert data after successful processing
-                if (pendingAlertData) {
-                    setPendingAlertData(null);
-                }
+                // Don't clear pending alert data after successful processing
+                // This ensures the alert context is maintained throughout the conversation
 
                 // Reset the inactivity timer after receiving a response
                 resetInactivityTimer();

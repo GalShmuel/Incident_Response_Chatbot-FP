@@ -4,7 +4,6 @@
     align-items: center;
     justify-content: space-between;  
     background-color: var(--secondary-color);
-    padding: 0 20px;
     box-shadow: 0 0 10px 0 var(--shadow-color);
     position: sticky;
     top: 0;
@@ -12,7 +11,7 @@
 }
 
 .dashboard-icon {
-    font-size: 50px;
+    font-size: 35px;
     color: var(--text-color);
     margin-right: 10px;
 }

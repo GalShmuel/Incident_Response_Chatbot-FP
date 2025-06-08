@@ -10,7 +10,7 @@ const Settings = ({ pendingAlertData, onSaveSettings }) => {
             id: 'alert-management',
             title: 'Alert Management',
             description: 'Configure alert severity and status',
-            icon: '🔔',
+            icon: '💻',
             options: [
                 { id: 'alertId', label: 'Alert ID', type: 'text', placeholder: 'Enter Alert ID' },
                 { id: 'severity', label: 'Alert Severity', type: 'select', options: ['1','2','3','4','5','6','7','8','9','10'] },

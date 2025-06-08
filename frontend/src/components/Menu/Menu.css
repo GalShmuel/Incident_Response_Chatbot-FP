@@ -1,19 +1,20 @@
 .menu-container {
-    position: absolute;
+    position: relative;
     inset: 0;
     padding: 0.9rem;
     display: flex;
     flex-direction: column;
     background: var(--bg-color);
     box-sizing: border-box;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
 }
 
 .menu-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.4rem;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 }
@@ -60,6 +61,10 @@
     flex-direction: column;
     gap: 0.4rem;
     flex: 1;
+    padding: 0.4rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 0.5rem;
 }
 
 .menu-option {
@@ -73,6 +78,8 @@
     align-items: flex-start;
     gap: 0.5rem;
     flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .menu-option:hover {
@@ -133,12 +140,6 @@
 .menu-option:nth-child(3) { animation-delay: 0.3s; }
 .menu-option:nth-child(4) { animation-delay: 0.4s; }
 
-/* Container sizing */
-.menu-container {
-    width: 100%;
-    height: 100%;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .menu-container {
@@ -175,4 +176,71 @@
     .menu-option-content p {
         font-size: 0.65rem;
     }
+}
+
+/* Chat menu specific styles */
+.chat-menu {
+    padding: 1rem;
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.chat-menu h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.6rem 0;
+    color: #374151;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.chat-menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.4rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.chat-menu-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.chat-menu-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-color: #007bff;
+}
+
+.chat-menu-option-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    color: #007bff;
+}
+
+.chat-menu-option-content {
+    flex: 1;
+}
+
+.chat-menu-option-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #212529;
+}
+
+.chat-menu-option-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
 } 

@@ -59,10 +59,12 @@ const Dashboard = () => {
                 </div>
             </div>
             <div className="dashboard-content">
-                <p>
-                    Here you can see Open alerts and Resolve alerts,<br/> 
-                    Click on an alert to see more details about it <br/> Or chat with our Chatbot!
-                </p>
+                {activeTab === 'alerts' && (
+                    <p>
+                        Here you can see Open alerts and Resolve alerts,<br/> 
+                        Click on an alert to see more details about it <br/> Or chat with our Chatbot!
+                    </p>
+                )}
                 {activeTab === 'alerts' ? (
                     <Alerts 
                         onAlertClick={handleAlertClick}

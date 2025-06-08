@@ -27,8 +27,8 @@ body {
 .settings-category {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.5rem;
+    padding: 0.5rem;
     background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -97,10 +97,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     background: var(--background-color);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--chat-bubble-user);
     border-radius: 8px;
 }
 
@@ -112,7 +111,7 @@ body {
 .setting-input,
 .setting-select {
     padding: 0.5rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--chat-bubble-user);
     border-radius: 4px;
     background: var(--input-background);
     color: var(--text-color);
@@ -175,7 +174,6 @@ body {
 .settings-actions {
     display: flex;
     gap: 1rem;
-    margin-top: 2rem;
 }
 
 .save-settings,

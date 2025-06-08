@@ -10,6 +10,7 @@ const Dashboard = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('alerts');
     const [currentFindings, setCurrentFindings] = useState([]);
+    const [showMenu, setShowMenu] = useState(true);
 
     const handleAlertClick = (alert) => {
         setSelectedAlert(alert);
@@ -71,7 +72,9 @@ const Dashboard = () => {
             <ChatBot 
                 isOpen={isChatOpen} 
                 setIsOpen={setIsChatOpen} 
-                alertData={selectedAlert} 
+                alertData={selectedAlert}
+                showMenu={showMenu}
+                setShowMenu={setShowMenu}
             />
         </div>
     );

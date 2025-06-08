@@ -341,7 +341,7 @@ const formatMessage = (content) => {
   return content;
 };
 
-const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
+const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMenu, setShowMenu }) => {
     const messagesEndRef = useRef(null);
     const [messages, setMessages] = useState([]);
     const [isThinking, setIsThinking] = useState(false);
@@ -350,48 +350,21 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
     const [error, setError] = useState(null);
     const [deletingChatId, setDeletingChatId] = useState(null);
     const [currentChatId, setCurrentChatId] = useState(null);
-    const [showMenu, setShowMenu] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
     const [pendingAlertData, setPendingAlertData] = useState(null);
     const [settingsMessage, setSettingsMessage] = useState(null);
     const inactivityTimerRef = useRef(null);
     const [selectedSetting, setSelectedSetting] = useState(null);
 
+    console.log('ChatViewFinal render - showMenu:', showMenu, 'showRecentChats:', showRecentChats);
+
+    // Add effect to log state changes
+    useEffect(() => {
+        console.log('ChatViewFinal state changed - showMenu:', showMenu, 'showRecentChats:', showRecentChats);
+    }, [showMenu, showRecentChats]);
+
     // Add state for current alert ID
     const [currentAlertId, setCurrentAlertId] = useState(null);
-    // const [inputAlertId, setInputAlertId] = useState('');
-    // const [settingsValues, setSettingsValues] = useState({});
-
-    const menuOptions = [
-        {
-            id: 'alert-analysis',
-            title: 'Alert Analysis',
-            description: 'Analyze security alerts and gain actionable insights',
-            icon: '🔍',
-            value: '1'
-        },
-        {
-            id: 'playbook',
-            title: 'Incident Playbook',
-            description: 'Follow predefined steps to handle incidents efficiently',
-            icon: '📘',
-            value: '2'
-        },
-        {
-            id: 'general-chat',
-            title: 'General Chat',
-            description: 'Discuss security topics or ask general questions',
-            icon: '💬',
-            value: '3'
-        },
-        {
-            id: 'settings',
-            title: 'Settings',
-            description: 'Configure your preferences and system settings',
-            icon: '⚙️',
-            value: '4'
-        }
-    ];
 
     // Function to reset the inactivity timer
     const resetInactivityTimer = () => {
@@ -406,23 +379,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }, {
                     role: 'menu',
-                    content: (
-                        <div className="chat-menu-options">
-                            {menuOptions.map((option) => (
-                                <div
-                                    key={option.id}
-                                    className="chat-menu-option"
-                                    onClick={() => handleMenuSelect(option)}
-                                >
-                                    <div className="chat-menu-option-icon">{option.icon}</div>
-                                    <div className="chat-menu-option-content">
-                                        <h3>{option.title}</h3>
-                                        <p>{option.description}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ),
+                    content: <Menu onSelect={handleMenuSelect} />,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
             }
@@ -547,8 +504,6 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
             }]);
         }
     };
-
-
 
     const handleConfigureSettings = () => {
         setShowSettings(true);
@@ -785,13 +740,25 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData }) => {
     };
 
     if (showMenu) {
-        return <Menu onSelect={handleMenuSelect} />;
+        console.log('Rendering Menu component');
+        return (
+            <div className="ChatView">
+                <div className="ChatMessages">
+                    <Menu onSelect={handleMenuSelect} />
+                </div>
+                <div className="ChatInputArea">
+                    <ChatInput onSend={handleMessageSend} isDisabled={isThinking} />
+                </div>
+            </div>
+        );
     }
 
+    console.log('Rendering main chat view');
     return (
         <div className="ChatView">
             <div className="ChatMessages">
                 {showRecentChats ? (
+                    console.log('Rendering recent chats view'),
                     <div className="recent-chats">
                         <h3>Recent Conversations</h3>
                         {isLoading ? (

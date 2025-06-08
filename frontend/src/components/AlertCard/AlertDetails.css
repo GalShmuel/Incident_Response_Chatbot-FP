@@ -1,7 +1,6 @@
 .details-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   position: relative;
 }
 
@@ -104,7 +103,7 @@
 .details-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  gap: 4px;
 }
 
 .detail-item {

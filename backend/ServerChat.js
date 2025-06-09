@@ -162,25 +162,97 @@ const handleAnalyzeAlert = () => {
 const handleIncidentPlaybook = () => {
     return {
         type: 'playbook',
-        content: `You are a cybersecurity incident response assistant. When analyzing a security alert or log, follow these steps:
+        content: `# Incident Response Playbook for Alert ${alertData?.displayData?.id || alertData?.Id || 'No specific alert'}
 
-            write it as steps of the playbook
-            1. Analyze the logs for potential security findings.
-            2. Follow standard incident response playbooks.
-            3. Provide step-by-step guidance based on the logs.
-            4. Include relevant security best practices.
-            5. Suggest appropriate tools and commands for investigation and mitigation.
-            6. Explain the reasoning behind each step you take.
-            7. Highlight any critical findings and potential risks.
-            8. Provide remediation steps when applicable.
-            9. Consider the severity level of the alert in your response.
-            10. Prioritize responses based on severity levels:
-                - Severe and Critical alerts require immediate attention.
+## Alert Information
+- **Alert ID**: ${alertData?.displayData?.id || alertData?.Id || 'N/A'}
+- **Alert Source**: ${alertData?.displayData?.source || 'AWS GuardDuty'}
+- **Severity Level**: ${alertData?.Severity || 'N/A'}
+- **Detection Time**: ${alertData?.CreatedAt || 'N/A'}
 
-            IMPORTANT:
-            If you need more information about an alert to provide a complete analysis, ask specific, targeted questions to gather the necessary context.
+## Response Time Targets (SLAs)
+- 🚨 **Containment**: Within 15 minutes
+- 🔍 **Investigation**: Within 1 hour
+- ✅ **Full Resolution**: Within 24 hours
 
-            After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`
+## 1. Initial Assessment & Containment
+1. Verify alert details and source
+2. Assess potential impact and scope
+3. Implement immediate containment measures
+4. Document all actions taken
+
+## 2. Detailed Investigation
+### Log Analysis Instructions
+1. **CloudTrail Analysis**
+   - Search for suspicious API calls
+   - Focus on the time window: 1 hour before/after detection
+   - Look for unusual patterns or unauthorized access
+
+2. **VPC Flow Logs**
+   - Check for unusual egress traffic
+   - Identify affected subnets and resources
+   - Document all suspicious IP addresses
+
+3. **GuardDuty Findings**
+   - Review related findings
+   - Check for similar patterns
+   - Document threat intelligence
+
+## 3. Notification & Escalation
+1. **Immediate Notifications**
+   - Alert SOC team lead
+   - Notify cloud security team
+   - Create high-priority incident ticket
+
+2. **Escalation Path**
+   - If sensitive data involved: Escalate to data owners
+   - If critical systems affected: Notify system owners
+   - If legal implications: Contact legal team
+
+## 4. Remediation Steps
+### Safety Checks
+⚠️ **IMPORTANT**: Before making any changes:
+- Backup current configurations
+- Document existing settings
+- Test changes in non-production if possible
+
+### Action Items
+1. Isolate affected resources
+2. Remove unauthorized access
+3. Update security controls
+4. Verify remediation effectiveness
+
+## 5. Documentation & Lessons Learned
+### Required Documentation
+- Incident timeline
+- Actions taken
+- Resources affected
+- Remediation steps
+
+### Lessons Learned Questions
+1. Was detection timely and accurate?
+2. Were access controls appropriate?
+3. Can we automate parts of this response?
+4. Does the threat feed need tuning?
+5. Are our SLAs appropriate?
+
+## 6. Prevention & Improvement
+1. Review and update security controls
+2. Update detection rules if needed
+3. Document new preventive measures
+4. Schedule follow-up review
+
+## Template Variables
+- Alert ID: <ALERT_ID>
+- Source IP: <IP_ADDRESS>
+- Affected Resources: <RESOURCE_NAMES>
+- IAM Role/User: <IAM_ENTITY>
+- Detection Time: <DETECTION_TIME>
+
+IMPORTANT:
+If you need more information about an alert to provide a complete analysis, ask specific, targeted questions to gather the necessary context.
+
+After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`
     };
 };
 
@@ -219,7 +291,7 @@ app.post('/api/chat', async (req, res) => {
         }
 
         // Rest of the existing code for handling other types of messages
-        const messages = [];
+        let messages = [];
 
         // Get or create chat
         let chat;
@@ -502,55 +574,38 @@ let findingsCache = {
     lastModified: null
 };
 
-// Add SSE clients tracking
-let sseClients = new Set();
-
-// Add SSE endpoint
-app.get('/api/findings/events', (req, res) => {
-    console.log('📡 New SSE client connected');
-    
-    // Set headers for SSE
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-    });
-
-    // Send initial findings
-    const initialFindings = readFindings();
-    res.write(`data: ${JSON.stringify({ type: 'initial', findings: initialFindings })}\n\n`);
-
-    // Add this client to our set
-    sseClients.add(res);
-
-    // Remove client when they disconnect
-    req.on('close', () => {
-        console.log('📡 SSE client disconnected');
-        sseClients.delete(res);
-    });
-});
-
-// Function to notify all SSE clients of changes
-const notifyClients = (type, data) => {
-    const message = `data: ${JSON.stringify({ type, data })}\n\n`;
-    sseClients.forEach(client => {
-        client.write(message);
-    });
-};
-
 // Add file watcher setup
-const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
+const findingsPath = path.join(__dirname, './data/findings.json');
 
-// Function to read findings from file
+// Ensure data directory exists
+const dataDir = path.join(__dirname, './data');
+if (!fs.existsSync(dataDir)) {
+    console.log('📁 Creating data directory...');
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Ensure findings file exists
+if (!fs.existsSync(findingsPath)) {
+    console.log('📄 Creating initial findings file...');
+    fs.writeFileSync(findingsPath, JSON.stringify([], null, 2));
+}
+
+// Function to read findings from file with error handling
 const readFindings = () => {
     try {
+        if (!fs.existsSync(findingsPath)) {
+            console.error('❌ Findings file not found');
+            return [];
+        }
+
         const stats = fs.statSync(findingsPath);
         const currentModified = stats.mtime.getTime();
         
         // Only read if file has changed
         if (!findingsCache.data || !findingsCache.lastModified || currentModified > findingsCache.lastModified) {
             console.log('📚 Reading findings from file - file has changed');
-            findingsCache.data = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
+            const fileContent = fs.readFileSync(findingsPath, 'utf8');
+            findingsCache.data = JSON.parse(fileContent);
             findingsCache.lastModified = currentModified;
         } else {
             console.log('📚 Using cached findings - file unchanged');
@@ -558,11 +613,11 @@ const readFindings = () => {
         return findingsCache.data;
     } catch (error) {
         console.error('❌ Error reading findings:', error);
-        throw error;
+        return [];
     }
 };
 
-// Modify the findings endpoint
+// Modify the findings endpoint to support polling
 app.get('/api/findings', (req, res) => {
     console.log('\n📥 ===== FINDINGS REQUEST =====');
     console.log('📅 Time:', new Date().toISOString());
@@ -612,26 +667,11 @@ app.get('/api/findings', (req, res) => {
             console.log(`- After severity filter: ${filteredFindings.length} findings`);
         }
 
-        // Ensure filteredFindings is an array
-        if (!Array.isArray(filteredFindings)) {
-            filteredFindings = [];
-        }
-
-        // Log final distribution
-        const finalSeverityDistribution = filteredFindings.reduce((acc, f) => {
-            acc[f.Severity] = (acc[f.Severity] || 0) + 1;
-            return acc;
-        }, {});
-
-        console.log('📊 Final Distribution:');
-        console.log('- Filtered findings:', filteredFindings.length);
-        console.log('- Severity distribution:', finalSeverityDistribution);
-        
         // Get the last modified time of the file
         const stats = fs.statSync(findingsPath);
         const lastModified = stats.mtime.getTime();
         
-        // Always return the same response structure
+        // Return the response with lastModified timestamp
         res.json({
             findings: filteredFindings,
             totalFindings: allFindings,
@@ -669,7 +709,7 @@ app.get('/api/findings/:id', (req, res) => {
     console.log('🔍 Request Type: GET single finding');
     console.log('🆔 Finding ID:', req.params.id);
     try {
-        const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
+        const findingsPath = path.join(__dirname, './data/findings.json');
         const findings = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
         const finding = findings.find(f => f.Id === req.params.id);
         
@@ -693,21 +733,56 @@ app.get('/api/findings/:id', (req, res) => {
     console.log('📥 ===== END SINGLE FINDING REQUEST =====\n');
 });
 
-// Modify the update endpoints to notify clients
+// Update findings endpoint
 app.put('/api/findings/:id', (req, res) => {
     console.log('\n📝 ===== UPDATE FINDING REQUEST =====');
     console.log('📅 Time:', new Date().toISOString());
     console.log('🔍 Request Type: PUT update finding');
     console.log('🆔 Finding ID:', req.params.id);
     console.log('📦 Request Body:', JSON.stringify(req.body, null, 2));
+    
     try {
-        const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
-        const findings = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
+        const findingsPath = path.join(__dirname, './data/findings.json');
+        
+        // Check if file exists
+        if (!fs.existsSync(findingsPath)) {
+            console.error('❌ Findings file not found');
+            return res.status(404).json({ 
+                error: 'Findings file not found',
+                message: 'The findings data file could not be located'
+            });
+        }
+
+        // Read and parse findings
+        let findings;
+        try {
+            const fileContent = fs.readFileSync(findingsPath, 'utf8');
+            findings = JSON.parse(fileContent);
+        } catch (error) {
+            console.error('❌ Error reading/parsing findings file:', error);
+            return res.status(500).json({ 
+                error: 'Error reading findings file',
+                message: 'Failed to read or parse the findings data file'
+            });
+        }
+
+        // Validate findings array
+        if (!Array.isArray(findings)) {
+            console.error('❌ Invalid findings data format');
+            return res.status(500).json({ 
+                error: 'Invalid findings format',
+                message: 'Findings data is not in the expected format'
+            });
+        }
+
         const findingIndex = findings.findIndex(f => f.Id === req.params.id);
         
         if (findingIndex === -1) {
             console.log('❌ Error: Finding not found');
-            return res.status(404).json({ message: 'Finding not found' });
+            return res.status(404).json({ 
+                error: 'Finding not found',
+                message: `No finding found with ID: ${req.params.id}`
+            });
         }
 
         const updatedFinding = req.body;
@@ -715,23 +790,38 @@ app.put('/api/findings/:id', (req, res) => {
         // Validate the updated finding
         if (!updatedFinding || typeof updatedFinding !== 'object') {
             console.log('❌ Error: Invalid finding format');
-            return res.status(400).json({ message: 'Invalid finding format. Expected an object.' });
+            return res.status(400).json({ 
+                error: 'Invalid finding format',
+                message: 'Expected an object for the finding update'
+            });
+        }
+
+        // Validate required fields
+        if (updatedFinding.Severity !== undefined && 
+            (typeof updatedFinding.Severity !== 'number' || 
+             updatedFinding.Severity < 1 || 
+             updatedFinding.Severity > 10)) {
+            return res.status(400).json({
+                error: 'Invalid severity value',
+                message: 'Severity must be a number between 1 and 10'
+            });
         }
 
         // Log the changes
         console.log('📊 Changes being made:');
         console.log('- Old Severity:', findings[findingIndex].Severity);
         console.log('- New Severity:', updatedFinding.Severity);
-        console.log('- Old Status:', findings[findingIndex].Service.Archived ? 'Archived' : 'Active');
-        console.log('- New Status:', updatedFinding.Service.Archived ? 'Archived' : 'Active');
+        console.log('- Old Status:', findings[findingIndex].Service?.Archived ? 'Archived' : 'Active');
+        console.log('- New Status:', updatedFinding.Service?.Archived ? 'Archived' : 'Active');
 
-        // Preserve the original ID
-        updatedFinding.Id = req.params.id;
+        // Create a backup of the original finding
+        const originalFinding = { ...findings[findingIndex] };
         
         // Update the finding
         findings[findingIndex] = {
             ...findings[findingIndex],
             ...updatedFinding,
+            Id: req.params.id, // Ensure ID is preserved
             Service: {
                 ...findings[findingIndex].Service,
                 ...updatedFinding.Service
@@ -739,22 +829,36 @@ app.put('/api/findings/:id', (req, res) => {
         };
 
         // Write the updated findings back to the file
-        fs.writeFileSync(findingsPath, JSON.stringify(findings, null, 4));
+        try {
+            fs.writeFileSync(findingsPath, JSON.stringify(findings, null, 2));
+        } catch (error) {
+            console.error('❌ Error writing to findings file:', error);
+            // Restore the original finding
+            findings[findingIndex] = originalFinding;
+            return res.status(500).json({ 
+                error: 'Error saving changes',
+                message: 'Failed to write changes to the findings file'
+            });
+        }
         
         // Invalidate the cache
         findingsCache.data = null;
         findingsCache.lastModified = null;
-
-        // Notify all connected clients of the update
-        notifyClients('update', { finding: findings[findingIndex] });
         
         console.log('✅ Success: Updated the finding');
         console.log('📤 Sending response...');
-        res.json({ message: 'Finding updated successfully', finding: findings[findingIndex] });
+        res.json({ 
+            message: 'Finding updated successfully', 
+            finding: findings[findingIndex] 
+        });
     } catch (error) {
         console.error('❌ Error updating finding:', error);
         console.error('Stack trace:', error.stack);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ 
+            error: 'Failed to update finding',
+            message: error.message,
+            details: error.stack
+        });
     }
     console.log('📝 ===== END UPDATE FINDING REQUEST =====\n');
 });
@@ -766,7 +870,7 @@ app.put('/api/findings', (req, res) => {
     console.log('🔍 Request Type: PUT update all findings');
     console.log('📦 Request Body:', JSON.stringify(req.body, null, 2));
     try {
-        const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
+        const findingsPath = path.join(__dirname, './data/findings.json');
         const updatedFindings = req.body;
         
         // Validate the updated findings
@@ -801,7 +905,7 @@ app.get('/api/alerts', async (req, res) => {
     console.log('🔍 Query Parameters:', req.query);
     
     try {
-        const findingsPath = path.join(__dirname, '../frontend/src/Data/findings.json');
+        const findingsPath = path.join(__dirname, './data/findings.json');
         const findings = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
         
         // Apply filters if provided
@@ -847,8 +951,77 @@ app.get('/api/alerts', async (req, res) => {
     console.log('📥 ===== END ALERTS REQUEST =====\n');
 });
 
+// Add error handling middleware
+app.use((err, req, res, next) => {
+    console.error('❌ Server Error:', err);
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: err.message,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Add connection timeout handling
+app.use((req, res, next) => {
+    res.setTimeout(30000, () => {
+        console.error('❌ Request timeout');
+        res.status(408).json({
+            error: 'Request Timeout',
+            message: 'The request took too long to process',
+            timestamp: new Date().toISOString()
+        });
+    });
+    next();
+});
+
+// Add health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`\n🚀 Server running on port ${PORT}`);
     console.log('📝 Logging enabled - watching for requests...\n');
+});
+
+// Increase max listeners for the server
+server.setMaxListeners(20);
+
+// Create a single shutdown function
+const shutdown = () => {
+    console.log('Shutting down gracefully...');
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
+};
+
+// Handle server errors
+server.on('error', (error) => {
+    console.error('❌ Server Error:', error);
+    if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Please try a different port.`);
+        process.exit(1);
+    }
+});
+
+// Handle process termination with a single listener
+process.once('SIGTERM', shutdown);
+process.once('SIGINT', shutdown);
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('❌ Uncaught Exception:', error);
+    shutdown();
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    shutdown();
 });

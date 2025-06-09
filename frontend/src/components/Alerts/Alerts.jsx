@@ -11,8 +11,7 @@ const Alerts = ({ onAlertClick }) => {
   const [selectedSeverities, setSelectedSeverities] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('open');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const prevSentFindings = useRef(null);
-  const eventSourceRef = useRef(null);
+  const lastModifiedRef = useRef(null);
 
   // Sort findings by severity
   const sortFindingsBySeverity = (findings) => {
@@ -40,63 +39,42 @@ const Alerts = ({ onAlertClick }) => {
     return sortFindingsBySeverity(filtered);
   }, [selectedSeverities, selectedStatus]);
 
-  // Handle SSE events
-  const handleSSEEvent = useCallback((event) => {
+  // Fetch findings datad
+  const fetchFindings = useCallback(async () => {
     try {
-      const data = JSON.parse(event.data);
+      const response = await fetch('http://localhost:5000/api/findings');
+      if (!response.ok) {
+        throw new Error('Failed to fetch findings');
+      }
+      const data = await response.json();
       
-      switch (data.type) {
-        case 'initial':
-          setAllFindings(sortFindingsBySeverity(data.findings));
-          setDisplayedFindings(applyFilters(data.findings));
-          setLoading(false);
-          break;
-          
-        case 'update':
-          setAllFindings(prevFindings => {
-            const updatedFindings = prevFindings.map(finding => 
-              finding.Id === data.data.finding.Id ? data.data.finding : finding
-            );
-            const sortedFindings = sortFindingsBySeverity(updatedFindings);
-            setDisplayedFindings(applyFilters(sortedFindings));
-            return sortedFindings;
-          });
-          break;
-          
-        default:
-          console.warn('Unknown SSE event type:', data.type);
+      // Only update if data has changed
+      if (data.lastModified !== lastModifiedRef.current) {
+        lastModifiedRef.current = data.lastModified;
+        const sortedFindings = sortFindingsBySeverity(data.findings || []);
+        setAllFindings(sortedFindings);
+        setDisplayedFindings(applyFilters(sortedFindings));
+        setLoading(false);
+        setError(null);
       }
     } catch (error) {
-      console.error('Error handling SSE event:', error);
+      console.error('Error fetching findings:', error);
+      setError(error.message);
+      setLoading(false);
     }
   }, [applyFilters]);
 
-  // Set up SSE connection
+  // Set up polling
   useEffect(() => {
-    // Clean up any existing connection
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-    }
+    // Initial fetch
+    fetchFindings();
 
-    // Create new SSE connection
-    const eventSource = new EventSource('http://localhost:5000/api/findings/events');
-    eventSourceRef.current = eventSource;
-
-    // Set up event handlers
-    eventSource.onmessage = handleSSEEvent;
-    eventSource.onerror = (error) => {
-      console.error('SSE Error:', error);
-      setError('Lost connection to server. Please refresh the page.');
-      eventSource.close();
-    };
+    // Set up polling interval (every 5 seconds)
+    const pollInterval = setInterval(fetchFindings, 5000);
 
     // Clean up on unmount
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-    };
-  }, [handleSSEEvent]);
+    return () => clearInterval(pollInterval);
+  }, [fetchFindings]);
 
   // Update displayed findings when filters change
   useEffect(() => {
@@ -116,6 +94,7 @@ const Alerts = ({ onAlertClick }) => {
   // Handle alert status change
   const handleAlertStatusChange = async (alertId, newStatus, newSeverity) => {
     try {
+      setIsRefreshing(true);
       const response = await fetch(`http://localhost:5000/api/findings/${alertId}`, {
         method: 'PUT',
         headers: {
@@ -133,10 +112,13 @@ const Alerts = ({ onAlertClick }) => {
         throw new Error('Failed to update alert status');
       }
 
-      // The SSE connection will handle the update automatically
+      // Fetch updated data
+      await fetchFindings();
     } catch (err) {
       console.error('Error updating alert status:', err);
       setError(err.message);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -147,6 +129,10 @@ const Alerts = ({ onAlertClick }) => {
   
   const openCount = filteredBySeverity.filter(f => !f.Service?.Archived).length;
   const resolvedCount = filteredBySeverity.filter(f => f.Service?.Archived).length;
+
+  if (loading) {
+    return <div className="loading">Loading alerts...</div>;
+  }
 
   if (error) {
     return <div className="error">Error: {error}</div>;

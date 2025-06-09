@@ -23,21 +23,23 @@ const AlertFilters = ({ selectedSeverities, onSeverityChange, findings }) => {
     }
   };
 
-  // Calculate counts for each severity level
-  const severityCounts = severityLevels.reduce((acc, { value }) => {
+  // Calculate total counts for each severity level (all alerts)
+  const totalSeverityCounts = severityLevels.reduce((acc, { value }) => {
     acc[value] = findings.filter(finding => finding.Severity === value).length;
     return acc;
   }, {});
 
-  // Calculate total alerts
-  const totalAlerts = findings.length;
+  // Calculate current filtered alerts count
+  const currentAlertsCount = findings.filter(finding => 
+    selectedSeverities.length === 0 || selectedSeverities.includes(finding.Severity)
+  ).length;
 
   return (
     <div className="filters-container">
       <div className="filters-header">
         <div className="filters-title">
           <h2>Severity Filters</h2>
-          <span className="total-count">{totalAlerts} total alerts</span>
+          <span className="total-count">{currentAlertsCount} total alerts</span>
         </div>
         <button 
           className="clear-filters"
@@ -51,15 +53,15 @@ const AlertFilters = ({ selectedSeverities, onSeverityChange, findings }) => {
         {severityLevels.map(({ value, label }) => (
           <button
             key={value}
-            className={`severity-filter ${selectedSeverities.includes(value) ? 'active' : ''} ${severityCounts[value] === 0 ? 'empty' : ''}`}
+            className={`severity-filter ${selectedSeverities.includes(value) ? 'active' : ''} ${totalSeverityCounts[value] === 0 ? 'empty' : ''}`}
             onClick={() => handleSeverityToggle(value)}
-            disabled={severityCounts[value] === 0}
+            disabled={totalSeverityCounts[value] === 0}
           >
             <span className="severity-dot" style={{ 
               backgroundColor: selectedSeverities.includes(value) ? 'currentColor' : 'transparent' 
             }} />
             <span className="filter-label">{label}</span>
-            <span className="count-badge">{severityCounts[value]}</span>
+            <span className="count-badge">{totalSeverityCounts[value]}</span>
           </button>
         ))}
       </div>

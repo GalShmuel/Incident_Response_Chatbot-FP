@@ -1,0 +1,118 @@
+/* Global Theme Variables */
+:root {
+    /* Light Theme (Default) */
+    --bg-color: #ffffff;
+    --text-color: #212529;
+    --border-color: #e9ecef;
+    --hover-bg: #d5d5d54f;
+    --hover: #9cb9d6;
+    --primary-color: #66c0c5;
+    --secondary-color: #f3f4f6;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --input-bg: #ffffff;
+    --input-border: #e9ecef;
+    --input-focus-border: #66c0c5;
+    --input-focus-shadow: rgba(102, 192, 197, 0.1);
+    --menu-bg: #ffffff;
+    --menu-hover: #f8f9fa;
+    --menu-active: #e9ecef;
+    --chat-bg: #ffffff;
+    --details-label: #606060;
+    --chat-bubble-user: #66c0c5;
+    --chat-bubble-bot: #f3f4f6;
+    --chat-text-user: #ffffff;
+    --chat-text-bot: #212529;
+    --scrollbar-track: #f1f1f1;
+    --scrollbar-thumb: #c1c1c1;
+    --scrollbar-thumb-hover: #a8a8a8;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --border-color: #2d2d2d;
+    --hover-bg: #2d2d2d;
+    --primary-color: #66c0c5;
+    --secondary-color: #2d2d2d;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --input-bg: #2d2d2d;
+    --input-border: #3d3d3d;
+    --input-focus-border: #66c0c5;
+    --input-focus-shadow: rgba(102, 192, 197, 0.2);
+    --menu-bg: #1a1a1a;
+    --menu-hover: #2d2d2d;
+    --menu-active: #3d3d3d;
+    --details-label: #c2e2f0;
+    --chat-bg: #1a1a1a;
+    --chat-bubble-user: #66c0c5;
+    --chat-bubble-bot: #2d2d2d;
+    --chat-text-user: #ffffff;
+    --chat-text-bot: #ffffff;
+    --scrollbar-track: #2d2d2d;
+    --scrollbar-thumb: #3d3d3d;
+    --scrollbar-thumb-hover: #4d4d4d;
+}
+
+/* Layout Variables */
+:root {
+    /* Default Layout */
+    --spacing: 1rem;
+    --font-size: 1rem;
+    --border-radius: 8px;
+    --transition-speed: 0.2s;
+}
+
+/* Compact Layout */
+[data-layout="compact"] {
+    --spacing: 0.5rem;
+    --font-size: 0.9rem;
+    --border-radius: 6px;
+}
+
+/* Detailed Layout */
+[data-layout="detailed"] {
+    --spacing: 1.2rem;
+    --font-size: 1.1rem;
+    --border-radius: 10px;
+}
+
+/* Custom Layout */
+[data-layout="custom"] {
+    --spacing: 1rem;
+    --font-size: 1rem;
+    --border-radius: 8px;
+}
+
+/* Global Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+/* Global Focus Styles */
+:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--input-focus-shadow);
+}
+
+/* Global Transition */
+* {
+    transition: background-color var(--transition-speed) ease,
+                color var(--transition-speed) ease,
+                border-color var(--transition-speed) ease,
+                box-shadow var(--transition-speed) ease;
+} 

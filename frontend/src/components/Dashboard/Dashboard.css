@@ -1,18 +1,47 @@
 .dashboard-header {
     display: flex;
     flex-direction: row;
-    align-items: left;
-    justify-content: left;  
-    background-color: rgba(202, 218, 221, 0.303);
- 
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    align-items: center;
+    justify-content: space-between;  
+    background-color: var(--secondary-color);
+    box-shadow: 0 0 10px 0 var(--shadow-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
+
 .dashboard-icon {
-    font-size: 50px;
-    color: #000;
-    justify-content: left;
-    margin-left: 10px;
-    margin-top: 17px;
+    font-size: 35px;
+    color: var(--text-color);
+    margin-right: 10px;
+}
+
+.dashboard-tabs {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    color: var(--details-label);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+}
+
+.tab-button.active {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
 }
 
 .dashboard-content {
@@ -20,6 +49,19 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    
-   
+    background-color: var(--secondary-color);
+}
+
+.dashboard-content p {
+    text-align: center;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 1rem 0;
+    padding: 0.7rem;
+    max-width: 600px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color, #e0e0e0);
 }

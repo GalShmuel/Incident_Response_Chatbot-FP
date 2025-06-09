@@ -3,9 +3,9 @@ import './ChatBot.css';
 import { VscRobot } from "react-icons/vsc";
 import { FaTimes } from 'react-icons/fa';
 import { MdHistory } from "react-icons/md";
-import ChatView from '../ChatView/ChatView';
+import ChatViewFinal from '../ChatView/ChatViewFinal';
 
-const ChatBot = ({ isOpen, setIsOpen, alertData }) => {
+const ChatBot = ({ isOpen, setIsOpen, alertData, showMenu, setShowMenu }) => {
   const [showRecentChats, setShowRecentChats] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 380, height: 600 });
   const chatWindowRef = useRef(null);
@@ -13,7 +13,16 @@ const ChatBot = ({ isOpen, setIsOpen, alertData }) => {
   const resizeType = useRef(null);
   const startPos = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
-  const toggleChat = () => setIsOpen(prev => !prev);
+  console.log('ChatBot render - showMenu:', showMenu, 'showRecentChats:', showRecentChats);
+
+  const toggleChat = () => {
+    console.log('Toggle chat - current isOpen:', isOpen);
+    setIsOpen(prev => !prev);
+  };
+
+  useEffect(() => {
+    console.log('ChatBot state changed - showMenu:', showMenu, 'showRecentChats:', showRecentChats);
+  }, [showMenu, showRecentChats]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -106,7 +115,21 @@ const ChatBot = ({ isOpen, setIsOpen, alertData }) => {
             <div className="chat-controls">
               <button
                 className="history-button"
-                onClick={() => setShowRecentChats(!showRecentChats)}
+                onClick={() => {
+                  console.log('History button clicked - current states:', {
+                    showMenu,
+                    showRecentChats,
+                    isOpen
+                  });
+                  setShowRecentChats(true);
+                  setIsOpen(true);
+                  setShowMenu(false);
+                  console.log('After history button click - states should be:', {
+                    showMenu: false,
+                    showRecentChats: true,
+                    isOpen: true
+                  });
+                }}
                 title="View chat history"
               >
                 <MdHistory />
@@ -116,10 +139,12 @@ const ChatBot = ({ isOpen, setIsOpen, alertData }) => {
               </button>
             </div>
           </div>
-          <ChatView 
+          <ChatViewFinal
             showRecentChats={showRecentChats} 
             setShowRecentChats={setShowRecentChats}
             alertData={alertData}
+            showMenu={showMenu}
+            setShowMenu={setShowMenu}
           />
         </div>
       ) : (

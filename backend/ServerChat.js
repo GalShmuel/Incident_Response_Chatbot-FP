@@ -48,7 +48,10 @@ app.post('/api/chat/process', async (req, res) => {
         const messages = [
             {
                 role: 'system',
-                content: 'You are a security assistant. Provide a brief analysis of this security alert in 2-3 sentences. Focus on: 1) Severity and impact 2) Immediate action needed 3) Key concern.'
+                content: `You are a TIER1 SOC Analyst specialized in analyzing AWS GuardDuty findings. 
+                write as the title the request you are asked to do.
+                Always maintain a professional and clear communication style.
+                `
             },
             {
                 role: 'user',
@@ -163,96 +166,22 @@ const handleIncidentPlaybook = () => {
     return {
         type: 'playbook',
         content: `# Incident Response Playbook for Alert ${alertData?.displayData?.id || alertData?.Id || 'No specific alert'}
+                    ## Alert Information
+                    - **Alert ID**: ${alertData?.displayData?.id || alertData?.Id || 'N/A'}
+                    - **Alert Source**: ${alertData?.displayData?.source || 'AWS GuardDuty'}
+                    - **Severity Level**: ${alertData?.Severity || 'N/A'}
+                    - **Detection Time**: ${alertData?.CreatedAt || 'N/A'}
+                    When you receive logs or security-related information:
+                    1. Analyze the logs for potential security findings
+                    2. Follow standard incident response playbooks
+                    3. Provide step-by-step guidance based on the logs
+                    4. Include relevant security best practices
+                    5. Suggest appropriate tools and commands
+                    6. Explain the reasoning behind each step
+                    7. Highlight critical findings and potential risks
+                    8. Provide remediation steps when applicable
 
-## Alert Information
-- **Alert ID**: ${alertData?.displayData?.id || alertData?.Id || 'N/A'}
-- **Alert Source**: ${alertData?.displayData?.source || 'AWS GuardDuty'}
-- **Severity Level**: ${alertData?.Severity || 'N/A'}
-- **Detection Time**: ${alertData?.CreatedAt || 'N/A'}
-
-## Response Time Targets (SLAs)
-- 🚨 **Containment**: Within 15 minutes
-- 🔍 **Investigation**: Within 1 hour
-- ✅ **Full Resolution**: Within 24 hours
-
-## 1. Initial Assessment & Containment
-1. Verify alert details and source
-2. Assess potential impact and scope
-3. Implement immediate containment measures
-4. Document all actions taken
-
-## 2. Detailed Investigation
-### Log Analysis Instructions
-1. **CloudTrail Analysis**
-   - Search for suspicious API calls
-   - Focus on the time window: 1 hour before/after detection
-   - Look for unusual patterns or unauthorized access
-
-2. **VPC Flow Logs**
-   - Check for unusual egress traffic
-   - Identify affected subnets and resources
-   - Document all suspicious IP addresses
-
-3. **GuardDuty Findings**
-   - Review related findings
-   - Check for similar patterns
-   - Document threat intelligence
-
-## 3. Notification & Escalation
-1. **Immediate Notifications**
-   - Alert SOC team lead
-   - Notify cloud security team
-   - Create high-priority incident ticket
-
-2. **Escalation Path**
-   - If sensitive data involved: Escalate to data owners
-   - If critical systems affected: Notify system owners
-   - If legal implications: Contact legal team
-
-## 4. Remediation Steps
-### Safety Checks
-⚠️ **IMPORTANT**: Before making any changes:
-- Backup current configurations
-- Document existing settings
-- Test changes in non-production if possible
-
-### Action Items
-1. Isolate affected resources
-2. Remove unauthorized access
-3. Update security controls
-4. Verify remediation effectiveness
-
-## 5. Documentation & Lessons Learned
-### Required Documentation
-- Incident timeline
-- Actions taken
-- Resources affected
-- Remediation steps
-
-### Lessons Learned Questions
-1. Was detection timely and accurate?
-2. Were access controls appropriate?
-3. Can we automate parts of this response?
-4. Does the threat feed need tuning?
-5. Are our SLAs appropriate?
-
-## 6. Prevention & Improvement
-1. Review and update security controls
-2. Update detection rules if needed
-3. Document new preventive measures
-4. Schedule follow-up review
-
-## Template Variables
-- Alert ID: <ALERT_ID>
-- Source IP: <IP_ADDRESS>
-- Affected Resources: <RESOURCE_NAMES>
-- IAM Role/User: <IAM_ENTITY>
-- Detection Time: <DETECTION_TIME>
-
-IMPORTANT:
-If you need more information about an alert to provide a complete analysis, ask specific, targeted questions to gather the necessary context.
-
-After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`
+                    After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`
     };
 };
 

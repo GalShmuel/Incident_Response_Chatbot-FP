@@ -4,6 +4,9 @@ import Alerts from '../Alerts/Alerts';
 import AlertGraphs from '../AlertGraphs/AlertGraphs';
 import { GiMonoWheelRobot } from "react-icons/gi";
 import ChatBot from '../ChatBotPop/ChatBot/ChatBot';
+import Sidebar from './Sidebar';
+import DashboardSummary from './DashboardSummary';
+import DashboardCharts from './DashboardCharts';
 
 const Dashboard = () => {
     const [selectedAlert, setSelectedAlert] = useState(null);
@@ -11,6 +14,7 @@ const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('alerts');
     const [currentFindings, setCurrentFindings] = useState([]);
     const [showMenu, setShowMenu] = useState(true);
+    const [activeSection, setActiveSection] = useState('overview');
 
     const handleAlertClick = (alert) => {
         setSelectedAlert(alert);
@@ -39,43 +43,38 @@ const Dashboard = () => {
         fetchFindings();
     }, []);
 
+    // Determine which main content to show based on sidebar nav
+    let mainContent;
+    if (activeSection === 'dashboard') {
+        mainContent = <>
+            <DashboardSummary findings={currentFindings} />
+            <DashboardCharts findings={currentFindings} />
+        </>;
+    } else if (activeSection === 'alerts') {
+        mainContent = <Alerts onAlertClick={handleAlertClick} onFindingsChange={handleFindingsChange} />;
+    } else {
+        mainContent = <div style={{padding:40, color:'#888'}}>Section coming soon...</div>;
+    }
+
     return (
-        <div className="dashboard">
-            <div className="dashboard-header">
-                <GiMonoWheelRobot className="dashboard-icon"/>
-                <h1>Alerts G&R</h1>
-                <div className="dashboard-tabs">
-                    <button 
-                        className={`tab-button ${activeTab === 'alerts' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('alerts')}
-                    >
-                        Alerts
-                    </button>
-                    <button 
-                        className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('graphs')}
-                    >
-                        Dashboard
-                    </button>
-                </div>
-            </div>
-            <div className="dashboard-content">
-                {activeTab === 'alerts' ? (
-                    <Alerts 
-                        onAlertClick={handleAlertClick}
-                        onFindingsChange={handleFindingsChange}
-                    />
-                ) : (
-                    <AlertGraphs findings={currentFindings} />
-                )}
-            </div>
-            <ChatBot 
-                isOpen={isChatOpen} 
-                setIsOpen={setIsChatOpen} 
-                alertData={selectedAlert}
-                showMenu={showMenu}
-                setShowMenu={setShowMenu}
+        <div style={{ display: 'flex', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
+            <Sidebar 
+                active={activeSection} 
+                onSelect={setActiveSection} 
+                title={<><span style={{fontWeight:'bold'}}>Alerts G&amp;R</span></>} 
             />
+            <div style={{ width: 'calc(100vw - 220px)', background: 'var(--secondary-color)', minHeight: '100vh', marginLeft: 220, overflowX: 'hidden' }}>
+                <div className="dashboard-content">
+                    {mainContent}
+                </div>
+                <ChatBot 
+                    isOpen={isChatOpen} 
+                    setIsOpen={setIsChatOpen} 
+                    alertData={selectedAlert}
+                    showMenu={showMenu}
+                    setShowMenu={setShowMenu}
+                />
+            </div>
         </div>
     );
 }

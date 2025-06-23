@@ -74,6 +74,7 @@ const DashboardCharts = ({ findings }) => {
 
   const lineOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       title: { display: true, text: 'Alerts Level Evolution' }
@@ -107,9 +108,10 @@ const DashboardCharts = ({ findings }) => {
 
   const mitreOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { position: 'right' },
-      title: { display: true, text: 'MITRE ATT&CK (by Type)' }
+      title: { display: true, text: 'MITRE ATTACK (by Type)' }
     }
   };
 
@@ -221,20 +223,32 @@ const DashboardCharts = ({ findings }) => {
     });
   };
 
-  // Map helper for fitting bounds
+  // Map helper for fitting bounds and fixing resize issues
   const MapComponent = ({ geoData }) => {
     const map = useMap();
     React.useEffect(() => {
       if (!map || !geoData || Object.keys(geoData).length === 0) return;
+      // Fit bounds
       try {
         const bounds = L.latLngBounds(
           Object.values(geoData).map(loc => [loc.lat, loc.lon])
         );
         map.fitBounds(bounds, { padding: [50, 50] });
       } catch (error) {
-        console.error('Error setting map bounds:', error);
+        // ignore
       }
+      // Fix map rendering after resize/layout change
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 250);
     }, [map, geoData]);
+    // Also fix on window resize
+    React.useEffect(() => {
+      if (!map) return;
+      const handleResize = () => map.invalidateSize();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, [map]);
     return null;
   };
 
@@ -278,17 +292,17 @@ const DashboardCharts = ({ findings }) => {
           </MapContainer>
         )}
       </div>
-      <div className="dashboard-chart dashboard-chart-mitre">
-        <Doughnut data={mitreData} options={mitreOptions} />
-      </div>
       <div className="dashboard-chart dashboard-chart-offenders">
         <TopOffendersChart
           data={topOffenderData}
           options={topOffenderOptions}
         />
       </div>
-      <div className="dashboard-chart dashboard-chart-main">
+      <div className="dashboard-chart dashboard-chart-evolution">
         <Line data={lineData} options={lineOptions} />
+      </div>
+      <div className="dashboard-chart dashboard-chart-mitre">
+        <Doughnut data={mitreData} options={mitreOptions} />
       </div>
     </div>
   );

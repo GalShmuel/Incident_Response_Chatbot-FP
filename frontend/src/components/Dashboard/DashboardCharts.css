@@ -1,9 +1,10 @@
 .dashboard-charts-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
+  grid-template-columns: repeat(2, 1fr);
   gap: 32px;
-  margin-bottom: 32px;
+  padding: 1.6rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 .dashboard-chart {
   background: #fff;
@@ -17,33 +18,62 @@
   justify-content: flex-start;
   font-size: 1.1rem;
   color: #444;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .dashboard-chart-main {
   grid-column: 1 / span 2;
   min-height: 260px;
 }
 .dashboard-chart-mitre {
-  min-width: 220px;
+  grid-column: 1 / span 2;
+  min-height: 220px;
+  max-height: 340px;
+  margin: 0;
+  width: 100%;
 }
 .dashboard-chart-agents {
   min-width: 220px;
 }
 .dashboard-chart-evolution {
-  grid-column: 1 / span 2;
+  grid-column: auto;
   min-height: 220px;
 }
 .dashboard-chart-offenders, .dashboard-chart-trend {
-  grid-column: 1 / span 2;
+  grid-column: auto;
   min-height: 260px;
+}
+.dashboard-chart canvas {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  box-sizing: border-box;
+}
+.dashboard-chart-main .leaflet-container {
+  width: 100% !important;
+  height: 320px !important;
+  min-width: 0 !important;
+  min-height: 200px !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
 }
 @media (max-width: 900px) {
   .dashboard-charts-grid {
-    gap: 16px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 0.5rem;
   }
   .dashboard-chart {
-    padding: 14px 8px 10px 8px;
-    min-height: 120px;
-    font-size: 1rem;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 8px 4px;
+  }
+  .dashboard-chart-mitre {
+    max-width: 100%;
   }
 }
 @media (max-width: 600px) {

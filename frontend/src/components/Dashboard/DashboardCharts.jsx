@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Line, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -42,7 +42,10 @@ const COLORS = [
   '#6D7278', // gray
 ];
 
-const DashboardCharts = ({ findings }) => {
+const DashboardCharts = ({ findings, onFilteredAlerts }) => {
+  const [selectedSeverityRanges, setSelectedSeverityRanges] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
   // Alerts Level Evolution (Line/Area Chart)
   const lineData = useMemo(() => {
     // Group by hour
@@ -175,9 +178,23 @@ const DashboardCharts = ({ findings }) => {
     scales: { y: { beginAtZero: true } }
   };
 
-  // World map geoData
+  // Check if severity is in selected range
+  const isInSelectedRange = (severity) => {
+    if (selectedSeverityRanges.length === 0) return true;
+    return selectedSeverityRanges.some(range => {
+      const [min, max] = range;
+      return severity >= min && severity <= max;
+    });
+  };
+
+  // World map geoData with severity filtering
   const geoData = React.useMemo(() => {
     return findings.reduce((acc, f) => {
+      // Skip if severity filter is active and this finding doesn't match any selected range
+      if (selectedSeverityRanges.length > 0 && !isInSelectedRange(f.Severity)) {
+        return acc;
+      }
+
       const d = f.Service?.Action?.AwsApiCallAction?.RemoteIpDetails ||
                 f.Service?.Action?.NetworkConnectionAction?.RemoteIpDetails ||
                 f.Service?.Action?.PortProbeAction?.RemoteIpDetails ||
@@ -194,15 +211,22 @@ const DashboardCharts = ({ findings }) => {
             count: 0,
             severity: f.Severity,
             organization: d.Organization?.Org || 'Unknown',
-            actionType: f.Service?.Action?.ActionType || 'Unknown'
+            actionType: f.Service?.Action?.ActionType || 'Unknown',
+            findings: [], // Store all findings for this location
+            // Additional details
+            asn: d.Organization?.Asn || 'Unknown',
+            asnOrg: d.Organization?.AsnOrg || 'Unknown',
+            isp: d.Organization?.Isp || 'Unknown',
+            geoLocation: d.GeoLocation
           };
         }
         acc[k].ips.add(d.IpAddressV4);
         acc[k].count++;
+        acc[k].findings.push(f); // Add this finding to the location's findings array
       }
       return acc;
     }, {});
-  }, [findings]);
+  }, [findings, selectedSeverityRanges]);
 
   const getSeverityColor = (severity) => {
     const num = typeof severity === 'string' ? parseInt(severity) : severity;
@@ -215,12 +239,63 @@ const DashboardCharts = ({ findings }) => {
 
   const createSeverityIcon = (severity) => {
     const color = getSeverityColor(severity);
-    return L.divIcon({
+    return L.divIcon({ 
       className: 'custom-marker',
-      html: `<div style="background:${color};width:14px;height:14px;border-radius:50%;border:3px solid #000000;box-shadow:0 0 6px rgba(0,0,0,0.7);position:relative;z-index:1;"></div>`,
+      html: `<div style="
+        background:${color};
+        width:14px;
+        height:14px;
+        border-radius:50%;
+        border:3px solid #000000;
+        box-shadow:0 0 6px rgba(0,0,0,0.7);
+        position:relative;
+        z-index:1;
+      "></div>`,
       iconSize: [20, 20],
       iconAnchor: [10, 10]
     });
+  };
+
+  // Handle severity range toggle
+  const handleSeverityToggle = (range) => {
+    setSelectedSeverityRanges(prev => {
+      const rangeExists = prev.some(r => r[0] === range[0] && r[1] === range[1]);
+      if (rangeExists) {
+        return prev.filter(r => !(r[0] === range[0] && r[1] === range[1]));
+      }
+      return [...prev, range];
+    });
+    setSelectedLocation(null); // Clear location selection when changing severity
+  };
+
+  // Check if a severity range is selected
+  const isRangeSelected = (range) => {
+    return selectedSeverityRanges.some(r => r[0] === range[0] && r[1] === range[1]);
+  };
+
+  // Handle location click from the popup button
+  const handleLocationClick = (locationKey, locationData) => {
+    setSelectedLocation(locationKey);
+    
+    // Call the callback to update the alerts view
+    if (onFilteredAlerts) {
+      const filteredFindings = locationData.findings.filter(f => isInSelectedRange(f.Severity));
+      onFilteredAlerts(filteredFindings, `Location: ${locationData.city}, ${locationData.country}`);
+    }
+  };
+
+  // Handle severity legend click
+  const handleSeverityLegendClick = (range) => {
+    handleSeverityToggle(range);
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSelectedSeverityRanges([]);
+    setSelectedLocation(null);
+    if (onFilteredAlerts) {
+      onFilteredAlerts(null, null);
+    }
   };
 
   // Map helper for fitting bounds and fixing resize issues
@@ -259,39 +334,95 @@ const DashboardCharts = ({ findings }) => {
         {Object.keys(geoData).length === 0 ? (
           <div className="map-placeholder"><p>No location data available</p></div>
         ) : (
-          <MapContainer center={[0, 0]} zoom={2} style={{ height: '320px', width: '100%' }}>
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {Object.entries(geoData).map(([key, data]) => (
-              <Marker
-                key={key}
-                position={[data.lat, data.lon]}
-                icon={createSeverityIcon(data.severity)}
-              >
-                <Popup>
-                  <div className="map-popup">
-                    <h4>Location Details</h4>
-                    <p><strong>Country:</strong> {data.country}</p>
-                    <p><strong>City:</strong> {data.city}</p>
-                    <p><strong>Organization:</strong> {data.organization}</p>
-                    <p><strong>Action Type:</strong> {data.actionType}</p>
-                    <p><strong>Alert Count:</strong> {data.count}</p>
-                    <p><strong>IP Addresses:</strong></p>
-                    <ul>
-                      {Array.from(data.ips).map(ip => (
-                        <li key={ip}>{ip}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-            <MapComponent geoData={geoData} />
-          </MapContainer>
+          <>
+            <MapContainer center={[0, 0]} zoom={2} style={{ height: '320px', width: '100%' }}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              {Object.entries(geoData).map(([key, data]) => (
+                <Marker
+                  key={key}
+                  position={[data.lat, data.lon]}
+                  icon={createSeverityIcon(data.severity)}
+                >
+                  <Popup>
+                    <div className="map-popup">
+                      <h4>Location Details</h4>
+                      <div className="map-popup-content">
+                        <p>
+                          <strong>Location:</strong>
+                          <span>
+                            {data.city && data.city !== 'Unknown' 
+                              ? `${data.city}, ${data.country}` 
+                              : data.country !== 'Unknown'
+                                ? data.country
+                                : 'Not Available'
+                            }
+                          </span>
+                        </p>
+                        <p>
+                          <strong>Alert Count:</strong>
+                          <span>{data.count}</span>
+                        </p>
+                        <button 
+                          className="view-alerts-btn"
+                          onClick={() => handleLocationClick(key, data)}
+                        >
+                          View Alerts ({data.count})
+                        </button>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+              <MapComponent geoData={geoData} />
+            </MapContainer>
+            
+            {/* Severity Level Legend */}
+            <div className="map-legend">
+              <div className="legend-header">
+                <h4>Filter by Severity Level</h4>
+              </div>
+              <div className="severity-legend">
+                <div 
+                  className={`legend-item ${isRangeSelected([1, 2]) ? 'active' : ''}`}
+                  onClick={() => handleSeverityLegendClick([1, 2])} 
+                  style={{cursor: 'pointer'}}
+                >
+                  <span className="legend-color low"></span>
+                  <span>Low (1-2)</span>
+                </div>
+                <div 
+                  className={`legend-item ${isRangeSelected([3, 4]) ? 'active' : ''}`}
+                  onClick={() => handleSeverityLegendClick([3, 4])} 
+                  style={{cursor: 'pointer'}}
+                >
+                  <span className="legend-color medium"></span>
+                  <span>Medium (3-4)</span>
+                </div>
+                <div 
+                  className={`legend-item ${isRangeSelected([5, 7]) ? 'active' : ''}`}
+                  onClick={() => handleSeverityLegendClick([5, 7])} 
+                  style={{cursor: 'pointer'}}
+                >
+                  <span className="legend-color high"></span>
+                  <span>High (5-7)</span>
+                </div>
+                <div 
+                  className={`legend-item ${isRangeSelected([8, 10]) ? 'active' : ''}`}
+                  onClick={() => handleSeverityLegendClick([8, 10])} 
+                  style={{cursor: 'pointer'}}
+                >
+                  <span className="legend-color critical"></span>
+                  <span>Critical (8-10)</span>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
+      
       <div className="dashboard-chart dashboard-chart-offenders">
         <TopOffendersChart
           data={topOffenderData}

@@ -1,6 +1,6 @@
 .sidebar {
   width: 220px;
-  background: #23272f;
+  background: var(--sidebar-bg);
   color: #fff;
   height: 100vh;
   display: flex;

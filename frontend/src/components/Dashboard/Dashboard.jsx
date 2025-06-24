@@ -15,6 +15,9 @@ const Dashboard = () => {
     const [currentFindings, setCurrentFindings] = useState([]);
     const [showMenu, setShowMenu] = useState(true);
     const [activeSection, setActiveSection] = useState('overview');
+    const [filteredFindings, setFilteredFindings] = useState(null);
+    const [filterLabel, setFilterLabel] = useState(null);
+    const [initialStatus, setInitialStatus] = useState('open');
 
     const handleAlertClick = (alert) => {
         setSelectedAlert(alert);
@@ -23,6 +26,30 @@ const Dashboard = () => {
 
     const handleFindingsChange = (findings) => {
         setCurrentFindings(findings);
+    };
+
+    // Handle filtered alerts from Attack Source Locations chart
+    const handleFilteredAlerts = (findings, label) => {
+        setFilteredFindings(findings);
+        setFilterLabel(label);
+        // Determine which tab to show: open or resolved
+        if (findings && findings.length > 0) {
+            const hasOpen = findings.some(f => !f.Service?.Archived);
+            const hasResolved = findings.some(f => f.Service?.Archived);
+            if (hasOpen) {
+                setInitialStatus('open');
+            } else if (hasResolved) {
+                setInitialStatus('resolved');
+            } else {
+                setInitialStatus('open');
+            }
+        } else {
+            setInitialStatus('open');
+        }
+        // Switch to alerts section to show the filtered results
+        if (findings !== null) {
+            setActiveSection('alerts');
+        }
     };
 
     // Fetch findings for graphs
@@ -48,10 +75,25 @@ const Dashboard = () => {
     if (activeSection === 'dashboard') {
         mainContent = <>
             <DashboardSummary findings={currentFindings} />
-            <DashboardCharts findings={currentFindings} />
+            <DashboardCharts 
+                findings={currentFindings} 
+                onFilteredAlerts={handleFilteredAlerts}
+            />
         </>;
     } else if (activeSection === 'alerts') {
-        mainContent = <Alerts onAlertClick={handleAlertClick} onFindingsChange={handleFindingsChange} />;
+        mainContent = (
+            <Alerts 
+                onAlertClick={handleAlertClick} 
+                onFindingsChange={handleFindingsChange}
+                filteredFindings={filteredFindings}
+                filterLabel={filterLabel}
+                initialStatus={initialStatus}
+                onClearFilter={() => {
+                    setFilteredFindings(null);
+                    setFilterLabel(null);
+                }}
+            />
+        );
     } else {
         mainContent = <div style={{padding:40, color:'#888'}}>Section coming soon...</div>;
     }

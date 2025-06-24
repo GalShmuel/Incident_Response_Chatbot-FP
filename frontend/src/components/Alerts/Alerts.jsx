@@ -3,13 +3,13 @@ import AlertCard from '../AlertCard/AlertCard';
 import AlertFilters from '../AlertFilters/AlertFilters';
 import './Alerts.css';
 
-const Alerts = ({ onAlertClick }) => {
+const Alerts = ({ onAlertClick, filteredFindings, filterLabel, onClearFilter, onFindingsChange, initialStatus }) => {
   const [allFindings, setAllFindings] = useState([]);
   const [displayedFindings, setDisplayedFindings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSeverities, setSelectedSeverities] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState('open');
+  const [selectedStatus, setSelectedStatus] = useState(initialStatus);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const lastModifiedRef = useRef(null);
 
@@ -39,7 +39,7 @@ const Alerts = ({ onAlertClick }) => {
     return sortFindingsBySeverity(filtered);
   }, [selectedSeverities, selectedStatus]);
 
-  // Fetch findings datad
+  // Fetch findings data
   const fetchFindings = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:5000/api/findings');
@@ -53,16 +53,17 @@ const Alerts = ({ onAlertClick }) => {
         lastModifiedRef.current = data.lastModified;
         const sortedFindings = sortFindingsBySeverity(data.findings || []);
         setAllFindings(sortedFindings);
-        setDisplayedFindings(applyFilters(sortedFindings));
-        setLoading(false);
-        setError(null);
+        if (onFindingsChange) {
+          onFindingsChange(sortedFindings);
+        }
       }
     } catch (error) {
       console.error('Error fetching findings:', error);
       setError(error.message);
+    } finally {
       setLoading(false);
     }
-  }, [applyFilters]);
+  }, [onFindingsChange]);
 
   // Set up polling
   useEffect(() => {
@@ -76,10 +77,11 @@ const Alerts = ({ onAlertClick }) => {
     return () => clearInterval(pollInterval);
   }, [fetchFindings]);
 
-  // Update displayed findings when filters change
+  // Update displayed findings when filters change or filtered findings change
   useEffect(() => {
-    setDisplayedFindings(applyFilters(allFindings));
-  }, [allFindings, applyFilters]);
+    const sourceFindings = filteredFindings || allFindings;
+    setDisplayedFindings(applyFilters(sourceFindings));
+  }, [allFindings, applyFilters, filteredFindings]);
 
   // Handle severity filter change
   const handleSeverityChange = (severities) => {
@@ -123,14 +125,20 @@ const Alerts = ({ onAlertClick }) => {
   };
 
   // Calculate counts from filtered findings based on selected severities
-  const filteredBySeverity = allFindings.filter(finding => 
+  const baseFindings = filteredFindings || allFindings;
+  const filteredBySeverity = baseFindings.filter(finding => 
     selectedSeverities.length === 0 || selectedSeverities.includes(finding.Severity)
   );
   
   const openCount = filteredBySeverity.filter(f => !f.Service?.Archived).length;
   const resolvedCount = filteredBySeverity.filter(f => f.Service?.Archived).length;
 
-  if (loading) {
+  // Update selectedStatus if initialStatus changes (e.g., when navigating from chart)
+  useEffect(() => {
+    setSelectedStatus(initialStatus);
+  }, [initialStatus]);
+
+  if (loading && allFindings.length === 0) {
     return <div className="loading">Loading alerts...</div>;
   }
 
@@ -140,10 +148,23 @@ const Alerts = ({ onAlertClick }) => {
 
   return (
     <div className="alerts-page">
+      {/* Filter Label Display */}
+      {filterLabel && (
+        <div className="filter-label-container">
+          <div className="filter-label">
+            <span className="filter-icon">🔍</span>
+            <span className="filter-text">Showing alerts for: {filterLabel}</span>
+            <button className="clear-filter-btn" onClick={onClearFilter}>
+              ✕ Clear Filter
+            </button>
+          </div>
+        </div>
+      )}
+      
       <AlertFilters 
         selectedSeverities={selectedSeverities}
         onSeverityChange={handleSeverityChange}
-        findings={allFindings}
+        findings={baseFindings}
       />
       <div className="alerts-container">
         <div className="alerts-status-container">
@@ -175,9 +196,11 @@ const Alerts = ({ onAlertClick }) => {
           ))}
           {displayedFindings.length === 0 && (
             <div className="no-results">
-              {selectedSeverities.length > 0 
-                ? "No alerts found for the selected severity levels"
-                : "No alerts found"}
+              {filterLabel 
+                ? "No alerts found for the selected filter and severity levels"
+                : selectedSeverities.length > 0 
+                  ? "No alerts found for the selected severity levels"
+                  : "No alerts found"}
             </div>
           )}
         </div>

@@ -136,19 +136,22 @@
 .legend-color.critical { background-color: #F44336; }
 
 .map-popup {
+    background: #23272f;
     padding: 0.5rem;
     max-width: 300px;
+    border-radius: 8px;
+    border: 1px solid #444;
 }
 
 .map-popup h4 {
     margin: 0 0 0.5rem 0;
-    color: var(--text-color);
+    color: #fff;
 }
 
 .map-popup p {
     margin: 0.25rem 0;
     font-size: 0.875rem;
-    color: var(--text-color);
+    color: #fff;
 }
 
 .map-popup ul {

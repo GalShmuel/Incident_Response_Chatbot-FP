@@ -151,11 +151,26 @@ const Alerts = ({ onAlertClick, filteredFindings, filterLabel, onClearFilter, on
       {/* Filter Label Display */}
       {filterLabel && (
         <div className="filter-label-container">
-          <div className="filter-label">
-            <span className="filter-icon">🔍</span>
+          <div className="filter-label" style={{ background: '#f5f7fa', color: '#222', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', marginBottom: 8 }}>
+            <span className="filter-icon" style={{ fontSize: '1.2rem' }}>🔍</span>
             <span className="filter-text">Showing alerts for: {filterLabel}</span>
-            <button className="clear-filter-btn" onClick={onClearFilter}>
-              ✕ Clear Filter
+            <button 
+              className="clear-filter-btn"
+              style={{
+                background: '#ffeded',
+                color: '#d32f2f',
+                border: '1px solid #f8bbbb',
+                fontWeight: 600,
+                marginLeft: 12,
+                padding: '6px 14px',
+                borderRadius: 6,
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                boxShadow: '0 1px 4px rgba(211,47,47,0.08)'
+              }}
+              onClick={onClearFilter}
+            >
+              ✕ Clear Location Filter
             </button>
           </div>
         </div>

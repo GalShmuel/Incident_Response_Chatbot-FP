@@ -7,6 +7,10 @@ import ChatBot from '../ChatBotPop/ChatBot/ChatBot';
 import Sidebar from './Sidebar';
 import DashboardSummary from './DashboardSummary';
 import DashboardCharts from './DashboardCharts';
+import Settings from '../Settings/Settings';
+import Analytics from '../Analytics/Analytics';
+import Reports from '../Reports/Reports';
+import Incidents from '../Incidents/Incidents';
 
 const Dashboard = () => {
     const [selectedAlert, setSelectedAlert] = useState(null);
@@ -94,29 +98,43 @@ const Dashboard = () => {
                 }}
             />
         );
+    } else if (activeSection === 'analytics') {
+        mainContent = <Analytics />;
+    } else if (activeSection === 'reports') {
+        mainContent = <Reports />;
+    } else if (activeSection === 'incidents') {
+        mainContent = <Incidents />;
+    } else if (activeSection === 'settings') {
+        mainContent = <Settings onBack={setActiveSection} />;
     } else {
         mainContent = <div style={{padding:40, color:'#888'}}>Section coming soon...</div>;
     }
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
-            <Sidebar 
-                active={activeSection} 
-                onSelect={setActiveSection} 
-                title={<><span style={{fontWeight:'bold'}}>Alerts G&amp;R</span></>} 
-            />
-            <div style={{ width: 'calc(100vw - 220px)', background: 'var(--secondary-color)', minHeight: '100vh', marginLeft: 220, overflowX: 'hidden' }}>
-                <div className="dashboard-content">
-                    {mainContent}
-                </div>
-                <ChatBot 
-                    isOpen={isChatOpen} 
-                    setIsOpen={setIsChatOpen} 
-                    alertData={selectedAlert}
-                    showMenu={showMenu}
-                    setShowMenu={setShowMenu}
-                />
-            </div>
+            {activeSection === 'settings' ? (
+                <Settings onBack={setActiveSection} />
+            ) : (
+                <>
+                    <Sidebar 
+                        active={activeSection} 
+                        onSelect={setActiveSection} 
+                        title={<><span style={{fontWeight:'bold'}}>Alerts G&amp;R</span></>} 
+                    />
+                    <div style={{ width: 'calc(100vw - 220px)', background: 'var(--secondary-color)', minHeight: '100vh', marginLeft: 220, overflowX: 'hidden' }}>
+                        <div className="dashboard-content">
+                            {mainContent}
+                        </div>
+                        <ChatBot 
+                            isOpen={isChatOpen} 
+                            setIsOpen={setIsChatOpen} 
+                            alertData={selectedAlert}
+                            showMenu={showMenu}
+                            setShowMenu={setShowMenu}
+                        />
+                    </div>
+                </>
+            )}
         </div>
     );
 }

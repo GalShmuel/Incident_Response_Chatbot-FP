@@ -1410,57 +1410,7 @@ h4.chat-heading {
     margin-top: 0;
     border-top: 1px solid #3d3d3d;
 }
-/* 
-.chat-menu-options {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0.4rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-top: 0.5rem;
-}
 
-.chat-menu-option {
-    display: flex;
-    align-items: flex-start;
-    padding: 1rem;
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.chat-menu-option:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-color: #007bff;
-}
-
-.chat-menu-option-icon {
-    font-size: 1.5rem;
-    margin-right: 1rem;
-    color: #007bff;
-}
-
-.chat-menu-option-content {
-    flex: 1;
-}
-
-.chat-menu-option-content h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    color: #212529;
-}
-
-.chat-menu-option-content p {
-    margin: 0;
-    font-size: 0.875rem;
-    color: #6c757d;
-} */
 
 /* Add responsive styles */
 @media (max-width: 768px) {
@@ -1647,7 +1597,7 @@ h4.chat-heading {
     margin-top: auto;
     padding: 0.6rem;
     justify-content: flex-end;
-    background: #ffffff;
+    /* background: #ffffff; */
     border-top: 1px solid #e5e7eb;
     position: sticky;
     bottom: 0;

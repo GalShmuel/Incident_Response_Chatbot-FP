@@ -1,13 +1,14 @@
 import React from 'react';
-import { FaTachometerAlt, FaBell, FaUserShield, FaShieldAlt, FaCog } from 'react-icons/fa';
+import { FaTachometerAlt, FaBell, FaChartLine, FaFileAlt, FaExclamationTriangle, FaCog } from 'react-icons/fa';
 import { GiMonoWheelRobot } from 'react-icons/gi';
 import './Sidebar.css';
 
 const navItems = [
   { label: 'Dashboard', icon: <FaTachometerAlt />, id: 'dashboard' },
   { label: 'Alerts', icon: <FaBell />, id: 'alerts' },
-  { label: 'Agents', icon: <FaUserShield />, id: 'agents' },
-  { label: 'Compliance', icon: <FaShieldAlt />, id: 'compliance' },
+  { label: 'Analytics', icon: <FaChartLine />, id: 'analytics' },
+  { label: 'Reports', icon: <FaFileAlt />, id: 'reports' },
+  { label: 'Incidents', icon: <FaExclamationTriangle />, id: 'incidents' },
   { label: 'Settings', icon: <FaCog />, id: 'settings' },
 ];
 

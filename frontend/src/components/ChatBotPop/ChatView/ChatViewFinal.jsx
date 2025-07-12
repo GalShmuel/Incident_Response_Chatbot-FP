@@ -5,7 +5,6 @@ import { IoPersonOutline, IoAddCircleOutline } from 'react-icons/io5';
 import { RiRobot2Line } from 'react-icons/ri';
 import { FaTrash } from 'react-icons/fa';
 import Settings from '../Settings/Settings';
-import Menu from '../../Menu/Menu';
 
 const formatJsonString = (content) => {
   try {
@@ -341,9 +340,31 @@ const formatMessage = (content) => {
   return content;
 };
 
+const QUICK_REPLIES = [
+  "Alert Analysis",
+  "Incident Playbook",
+  "Configure Settings",
+  "General Security Chat"
+];
+
+function getWelcomeMessages() {
+  return [
+    {
+      role: 'assistant',
+      content: "Hi! Welcome to G&R bot security. I'll be assisting you here today.\nPlease select an option from the menu below.",
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    },
+    {
+      role: 'quick_replies',
+      content: QUICK_REPLIES,
+      timestamp: null
+    }
+  ];
+}
+
 const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMenu, setShowMenu }) => {
     const messagesEndRef = useRef(null);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState(getWelcomeMessages());
     const [isThinking, setIsThinking] = useState(false);
     const [recentChats, setRecentChats] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -380,7 +401,36 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }, {
                     role: 'menu',
-                    content: <Menu onSelect={handleMenuSelect} />,
+                    content: <Settings 
+                        pendingAlertData={pendingAlertData}
+                        onSaveSettings={({ success, message }) => {
+                            setMessages(prev => [...prev, {
+                                role: 'assistant',
+                                content: message,
+                                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            }]);
+                            if (success) {
+                                setMessages(prev => [...prev, {
+                                    role: 'menu',
+                                    content: (
+                                        <div className="settings-actions">
+                                            <button className="save-settings" onClick={() => handleConfigureSettings()}>
+                                                Configure Another Category
+                                            </button>
+                                            <button className="back-settings" onClick={() => {
+                                                setShowSettings(false);
+                                                setSelectedSetting(null);
+                                                setShowMenu(true);
+                                            }}>
+                                                Return to Main Menu
+                                            </button>
+                                        </div>
+                                    ),
+                                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                }]);
+                            }
+                        }}
+                    />,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
             }
@@ -411,7 +461,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
             setMessages([{
                 role: 'assistant',
                 content: 'Please provide a security alert to analyze.',
-                timestamp: new Date().toLocaleTimeString()
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }]);
             return;
         }
@@ -426,7 +476,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
         const initialMessage = {
             role: 'user',
             content: `Please analyze this security alert:\n\n\`\`\`json\n${JSON.stringify(pendingAlertData, null, 2)}\n\`\`\``,
-            timestamp: new Date().toLocaleTimeString()
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
         try {
@@ -455,7 +505,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                         messages: [initialMessage, {
                             role: 'assistant',
                             content: data.response,
-                            timestamp: data.timestamp
+                            timestamp: new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         }],
                         alertId: pendingAlertData.displayData?.id || Date.now().toString()
                     })
@@ -468,30 +518,22 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                 const chatData = await chatResponse.json();
                 setCurrentChatId(chatData._id);
                 
-                setMessages([
+                let botTimestamp = new Date(data.timestamp);
+                if (isNaN(botTimestamp.getTime())) {
+                  botTimestamp = new Date();
+                }
+                setMessages(prev => [
+                    ...prev,
                     initialMessage,
                     {
                         role: 'assistant',
                         content: data.response,
-                        timestamp: data.timestamp
+                        timestamp: botTimestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     },
                     {
-                        role: 'menu',
-                        content: (
-                            <div className="chat-menu-options">
-                                <div
-                                    className="chat-menu-option"
-                                    onClick={() => setShowMenu(true)}
-                                >
-                                    <div className="chat-menu-option-icon">🏠</div>
-                                    <div className="chat-menu-option-content">
-                                        <h3>Back to Main Menu</h3>
-                                        <p>Return to the main menu to select another option</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ),
-                        timestamp: new Date().toLocaleTimeString()
+                        role: 'quick_replies',
+                        content: QUICK_REPLIES,
+                        timestamp: null
                     }
                 ]);
             } else {
@@ -502,7 +544,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
             setMessages([initialMessage, {
                 role: 'assistant',
                 content: 'Sorry, I encountered an error analyzing the alert. Please try again.',
-                timestamp: new Date().toLocaleTimeString()
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }]);
         }
     };
@@ -518,7 +560,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                     setMessages(prev => [...prev, {
                         role: 'assistant',
                         content: message,
-                        timestamp: new Date().toLocaleTimeString()
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     }]);
                     if (success) {
                         setMessages(prev => [...prev, {
@@ -537,26 +579,13 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                                     </button>
                                 </div>
                             ),
-                            timestamp: new Date().toLocaleTimeString()
+                            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         }]);
                     }
                 }}
             />,
-            timestamp: new Date().toLocaleTimeString()
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
-    };
-
-    const handleMenuSelect = async (option) => {
-        setShowMenu(false);
-        if (option.id === 'settings') {
-            handleConfigureSettings();
-        } else if (option.id === 'alert-analysis') {
-            handleMessageSend("Please analyze this security alert and provide insights.");
-        } else if (option.id === 'playbook') {
-            handleMessageSend("Please help me create an incident playbook for this alert.");
-        } else if (option.id === 'general-chat') {
-            handleMessageSend("I'd like to discuss some security topics.");
-        }
     };
 
     const scrollToBottom = () => {
@@ -638,10 +667,10 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
     };
 
     const initializeNewChat = () => {
-        setMessages([]);
+        setMessages(getWelcomeMessages());
         setCurrentChatId(null);
         setShowRecentChats(false);
-        setShowMenu(true);
+        setShowMenu(false);
     };
 
     const handleMessageSend = async (content) => {
@@ -697,33 +726,7 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
                     content: data.message,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 };
-                setMessages(prev => [...prev, assistantMessage]);
-
-                // Add menu button after every response
-                setMessages(prev => [...prev, {
-                    role: 'menu',
-                    content: (
-                        <div className="chat-menu-options">
-                            <div
-                                className="chat-menu-option"
-                                onClick={() => {
-                                    setShowMenu(true);
-                                    // Preserve the alert data when returning to menu
-                                    if (savedAlertData) {
-                                        setPendingAlertData(savedAlertData);
-                                    }
-                                }}
-                            >
-                                <div className="chat-menu-option-icon">🏠</div>
-                                <div className="chat-menu-option-content">
-                                    <h3>Back to Main Menu</h3>
-                                    <p>Return to the main menu to select another option</p>
-                                </div>
-                            </div>
-                        </div>
-                    ),
-                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                }]);
+                setMessages(prev => [...prev, assistantMessage, { role: 'quick_replies', content: QUICK_REPLIES, timestamp: null }]);
 
                 // Don't clear pending alert data after successful processing
                 // This ensures the alert context is maintained throughout the conversation
@@ -745,176 +748,136 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
         }
     };
 
-    if (showMenu) {
-        console.log('Rendering Menu component');
-        return (
-            <div className="ChatView">
-                <div className="ChatMessages" style={{ height: 'calc(100% - 60px)', overflow: 'hidden' }}>
-                    <Menu onSelect={handleMenuSelect} />
-                </div>
-                <div className="ChatInputArea">
-                    <ChatInput onSend={handleMessageSend} isDisabled={isThinking} />
-                </div>
-            </div>
-        );
+    function handleQuickReplySelect(option) {
+      if (option === "Configure Settings") {
+        setShowSettings(true);
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'settings',
+            content: null,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+        return;
+      } else if (option === "Alert Analysis") {
+        if (!pendingAlertData) {
+          setMessages([{
+            role: 'assistant',
+            content: 'Please provide a security alert to analyze.',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }]);
+          return;
+        }
+        handleAnalyzeAlert();
+      } else if (option === "Incident Playbook") {
+        handleMessageSend("Please help me create an incident playbook for this alert.");
+      } else if (option === "General Security Chat") {
+        handleMessageSend("I'd like to discuss some security topics.");
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { role: 'user', content: option, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+        ]);
+        handleMessageSend(option);
+      }
     }
 
-    console.log('Rendering main chat view');
+    // In the main render, always show the chat view (never the menu)
     return (
         <div className="ChatView">
             <div className="ChatMessages">
-                {showRecentChats ? (
-                    console.log('Rendering recent chats view'),
-                    <div className="recent-chats">
-                        <h3>Recent Conversations</h3>
-                        {isLoading ? (
-                            <div className="loading-spinner">Loading recent chats...</div>
-                        ) : error ? (
-                            <div className="error-message">
-                                {error}
-                                <button onClick={fetchRecentChats} className="retry-button">
-                                    Retry
-                                </button>
+                {messages && messages.length > 0 ? (
+                    messages.map((message, index) => (
+                        message.role === 'quick_replies' ? (
+                            <div key={index} style={{width: '100%'}}>
+                                <div className="quick-replies-prompt">Choose an option:</div>
+                                <div className="quick-replies-row">
+                                    {message.content.map((reply, i) => (
+                                        <button
+                                            key={i}
+                                            className="quick-reply-btn"
+                                            onClick={() => {
+                                                setMessages(prev => prev.filter((m, idx) => idx !== index));
+                                                if (reply === "Incident Playbook" || reply === "General Security Chat") {
+                                                    handleQuickReplySelect(reply);
+                                                } else {
+                                                    setMessages(prev => [
+                                                        ...prev,
+                                                        { role: 'user', content: reply, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+                                                    ]);
+                                                    handleQuickReplySelect(reply);
+                                                }
+                                            }}
+                                        >
+                                            {reply}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : message.role === 'settings' ? (
+                            <div key={index} className="message settings-message">
+                                <div className="message-text">
+                                    <Settings
+                                        pendingAlertData={pendingAlertData}
+                                        onSaveSettings={({ success, message }) => {
+                                            setMessages(prev => [...prev, {
+                                                role: 'assistant',
+                                                content: message,
+                                                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            }]);
+                                        }}
+                                    />
+                                    <div className="message-timestamp">{message.timestamp}</div>
+                                </div>
                             </div>
                         ) : (
-                            <>
-                                <div className="recent-chats-list">
-                                    {recentChats && recentChats.length > 0 ? (
-                                        recentChats.map((chat) => (
-                                            <div
-                                                key={chat._id}
-                                                className={`recent-chat-item ${deletingChatId === chat._id ? 'deleting' : ''}`}
-                                                onClick={() => selectChat(chat)}
-                                            >
-                                                <div className="recent-chat-preview">
-                                                    <div className="recent-chat-time">
-                                                        {new Date(chat.updatedAt).toLocaleString()}
-                                                    </div>
-                                                    <div className="recent-chat-messages">
-                                                        {chat.messages && chat.messages.length > 0 && (
-                                                            <>
-                                                                {chat.messages[0].content && (
-                                                                    <div className="preview-message alert-title">
-                                                                        {(() => {
-                                                                            try {
-                                                                                const jsonMatch = chat.messages[0].content.match(/```json\n([\s\S]*?)\n```/);
-                                                                                if (jsonMatch) {
-                                                                                    const alertData = JSON.parse(jsonMatch[1]);
-                                                                                    const description = alertData.description || 
-                                                                                                     alertData.Description || 
-                                                                                                     alertData.details?.description ||
-                                                                                                     'Alert Analysis';
-                                                                                    return description.length > 50 
-                                                                                        ? description.substring(0, 50) + '...' 
-                                                                                        : description;
-                                                                                }
-                                                                                
-                                                                                const firstLine = chat.messages[0].content.split('\n')[0];
-                                                                                if (firstLine && !firstLine.includes('```')) {
-                                                                                    return firstLine.length > 50 
-                                                                                        ? firstLine.substring(0, 50) + '...' 
-                                                                                        : firstLine;
-                                                                                }
-                                                                            } catch (e) {
-                                                                                console.error('Error parsing alert data:', e);
-                                                                            }
-                                                                            return 'Alert Analysis';
-                                                                        })()}
-                                                                    </div>
-                                                                )}
-                                                                {chat.messages.slice(-2).map((msg, idx) => (
-                                                                    <div key={idx} className={`preview-message ${msg.role}`}>
-                                                                        {msg.content && msg.content.length > 50 
-                                                                            ? msg.content.substring(0, 50) + '...' 
-                                                                            : msg.content}
-                                                                    </div>
-                                                                ))}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <button 
-                                                    className="delete-chat-button"
-                                                    onClick={(e) => deleteChat(chat._id, e)}
-                                                    title="Delete chat"
-                                                    disabled={deletingChatId === chat._id}
-                                                >
-                                                    <FaTrash />
-                                                </button>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="no-chats-message">
-                                            No recent conversations found.
-                                        </div>
-                                    )}
+                            <div key={index} className={`message ${message.role}`}>
+                                <div className={`icon-wrapper ${message.role === 'user' ? 'user-icon-wrapper' : 'bot-icon-wrapper'}`}>
+                                    {message.role === 'user' ? <IoPersonOutline className="icon" /> : <RiRobot2Line className="icon" />}
                                 </div>
-                                <div className="recent-chats-footer">
-                                    <button 
-                                        className="new-chat-button"
-                                        onClick={initializeNewChat}
-                                    >
-                                        <IoAddCircleOutline />
-                                        <span>Start New Chat</span>
-                                    </button>
+                                <div className="message-text">
+                                    {typeof message.content === 'string'
+                                        ? message.content.includes('```json')
+                                            ? formatJsonString(message.content)
+                                            : <div dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
+                                        : <div dangerouslySetInnerHTML={{ __html: message.content }} />}
+                                    <div className="message-timestamp">
+                                        {message.timestamp}
+                                    </div>
                                 </div>
-                            </>
-                        )}
-                    </div>
+                            </div>
+                        )
+                    ))
                 ) : (
-                    <>
-                        {messages && messages.length > 0 ? (
-                            messages.map((message, index) => (
-                                <div key={index} className={`message ${message.role}`}>
-                                    <div className={`icon-wrapper ${message.role === 'user' ? 'user-icon-wrapper' : 'bot-icon-wrapper'}`}>
-                                        {message.role === 'user' ? <IoPersonOutline className="icon" /> : <RiRobot2Line className="icon" />}
-                                    </div>
-                                    <div className="message-text">
-                                        {message.role === 'menu' ? (
-                                            message.content
-                                        ) : (
-                                            typeof message.content === 'string' 
-                                                ? message.content.includes('```json')
-                                                    ? formatJsonString(message.content)
-                                                    : <div dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
-                                                : <div dangerouslySetInnerHTML={{ __html: message.content }} />
-                                        )}
-                                        <div className="message-timestamp">
-                                            {message.timestamp}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="no-messages">
-                                Start a new conversation by sending a message.
-                            </div>
-                        )}
-                        {isThinking && (
-                            <div className="message bot">
-                                <div className="icon-wrapper bot-icon-wrapper">
-                                    <RiRobot2Line className="icon" />
-                                </div>
-                                <div className="message-text thinking">
-                                    <div className="thinking-dots">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </>
+                    <div className="no-messages">
+                        Start a new conversation by sending a message.
+                    </div>
                 )}
+                <div ref={messagesEndRef} />
             </div>
-            {!showRecentChats && (
-                <div className="ChatInputArea">
-                    <ChatInput onSend={handleMessageSend} isDisabled={isThinking} />
-                </div>
-            )}
+            <ChatInput
+                onSend={handleMessageSend}
+                isThinking={isThinking}
+                showSettings={showSettings}
+                setShowSettings={setShowSettings}
+                selectedSetting={selectedSetting}
+                setSelectedSetting={setSelectedSetting}
+                settingsMessage={settingsMessage}
+                setSettingsMessage={setSettingsMessage}
+                showMenu={showMenu}
+                setShowMenu={setShowMenu}
+                initializeNewChat={initializeNewChat}
+                recentChats={recentChats}
+                deleteChat={deleteChat}
+                selectChat={selectChat}
+                isLoading={isLoading}
+                error={error}
+                showRecentChats={showRecentChats}
+                setShowRecentChats={setShowRecentChats}
+            />
         </div>
     );
-}
+};
 
 export default ChatViewFinal;

@@ -351,7 +351,7 @@ function getWelcomeMessages() {
   return [
     {
       role: 'assistant',
-      content: "Hi! Welcome to G&R bot security. I'll be assisting you here today.\nPlease select an option from the menu below.",
+      content: "Hi! Welcome to G&R bot security.\nI'll be assisting you here today.\nPlease select an option from the menu below.",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     },
     {

@@ -212,8 +212,7 @@ const DashboardCharts = ({ findings, onFilteredAlerts }) => {
             severity: f.Severity,
             organization: d.Organization?.Org || 'Unknown',
             actionType: f.Service?.Action?.ActionType || 'Unknown',
-            findings: [], // Store all findings for this location
-            // Additional details
+            findings: [],
             asn: d.Organization?.Asn || 'Unknown',
             asnOrg: d.Organization?.AsnOrg || 'Unknown',
             isp: d.Organization?.Isp || 'Unknown',
@@ -222,7 +221,30 @@ const DashboardCharts = ({ findings, onFilteredAlerts }) => {
         }
         acc[k].ips.add(d.IpAddressV4);
         acc[k].count++;
-        acc[k].findings.push(f); // Add this finding to the location's findings array
+        acc[k].findings.push(f);
+      } else {
+        // Handle findings with no geolocation
+        const k = 'unknown';
+        if (!acc[k]) {
+          acc[k] = {
+            lat: null,
+            lon: null,
+            country: 'Unknown',
+            city: 'Unknown',
+            ips: new Set(),
+            count: 0,
+            severity: f.Severity,
+            organization: 'Unknown',
+            actionType: f.Service?.Action?.ActionType || 'Unknown',
+            findings: [],
+            asn: 'Unknown',
+            asnOrg: 'Unknown',
+            isp: 'Unknown',
+            geoLocation: null
+          };
+        }
+        acc[k].count++;
+        acc[k].findings.push(f);
       }
       return acc;
     }, {});
@@ -340,7 +362,9 @@ const DashboardCharts = ({ findings, onFilteredAlerts }) => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
-              {Object.entries(geoData).map(([key, data]) => (
+              {Object.entries(geoData)
+                .filter(([key, data]) => data.lat !== null && data.lon !== null)
+                .map(([key, data]) => (
                 <Marker
                   key={key}
                   position={[data.lat, data.lon]}
@@ -419,6 +443,11 @@ const DashboardCharts = ({ findings, onFilteredAlerts }) => {
                 </div>
               </div>
             </div>
+            {Object.keys(geoData).includes('unknown') && (
+              <div className="map-summary-unknown">
+                <strong>Unknown Location Alerts:</strong> {geoData['unknown'].count}
+              </div>
+            )}
           </>
         )}
       </div>

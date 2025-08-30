@@ -783,6 +783,54 @@ const ChatViewFinal = ({ showRecentChats, setShowRecentChats, alertData, showMen
       }
     }
 
+    if (showRecentChats) {
+        return (
+            <div className="recent-chats">
+                <h3>Recent Chats</h3>
+                <div className="recent-chats-list">
+                    {isLoading ? (
+                        <div>Loading...</div>
+                    ) : error ? (
+                        <div className="error">{error}</div>
+                    ) : recentChats.length === 0 ? (
+                        <div>No previous chats found.</div>
+                    ) : (
+                        recentChats.map(chat => (
+                            <div
+                                key={chat._id}
+                                className="recent-chat-item"
+                                onClick={() => selectChat(chat)}
+                                style={{ position: 'relative' }}
+                            >
+                                <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                                    {chat.messages[0]?.content?.slice(0, 40) || 'Chat'}
+                                </div>
+                                <div style={{ fontSize: '0.9em', color: '#888' }}>
+                                    {chat.updatedAt ? new Date(chat.updatedAt).toLocaleString() : ''}
+                                </div>
+                                <button
+                                    className="delete-chat-btn"
+                                    onClick={e => deleteChat(chat._id, e)}
+                                    disabled={deletingChatId === chat._id}
+                                    style={{ position: 'absolute', top: 8, right: 8 }}
+                                >
+                                    <FaTrash />
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+                <button
+                    className="btn"
+                    style={{ marginTop: 16 }}
+                    onClick={() => setShowRecentChats(false)}
+                >
+                    Back to Chat
+                </button>
+            </div>
+        );
+    }
+
     // In the main render, always show the chat view (never the menu)
     return (
         <div className="ChatView">

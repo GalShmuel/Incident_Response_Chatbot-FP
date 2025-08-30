@@ -41,6 +41,13 @@
   font-weight: 500;
   letter-spacing: 0.2px;
 }
+.dashboard-summary-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  opacity: 0.85;
+}
 
 /* Medium screens: allow wrapping */
 @media (max-width: 900px) {

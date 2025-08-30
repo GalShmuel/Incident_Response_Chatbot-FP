@@ -13,6 +13,7 @@ import {
   ArcElement
 } from 'chart.js';
 import './Analytics.css';
+import { FaBell, FaExclamationTriangle, FaFireAlt, FaGlobe, FaFlag, FaChartLine } from 'react-icons/fa';
 
 ChartJS.register(
   CategoryScale,
@@ -224,30 +225,36 @@ const Analytics = () => {
       </div>
 
       {/* Security Metrics Cards */}
-      <div className="metrics-grid">
-        <div className="metric-card">
+      <div className="metrics-grid" style={{ marginBottom: 48 }}>
+        <div className="metric-card" style={{ position: 'relative', overflow: 'hidden' }}>
+          <span className="metric-icon" style={{ color: '#36A2EB' }}><FaBell /></span>
           <h3>Total Alerts</h3>
-          <div className="metric-value">{securityMetrics.totalAlerts}</div>
+          <div className="metric-value-with-icon">{securityMetrics.totalAlerts}</div>
         </div>
-        <div className="metric-card critical">
+        <div className="metric-card critical" style={{ position: 'relative', overflow: 'hidden' }}>
+          <span className="metric-icon" style={{ color: '#F44336' }}><FaExclamationTriangle /></span>
           <h3>Critical Alerts</h3>
-          <div className="metric-value">{securityMetrics.criticalAlerts}</div>
+          <div className="metric-value-with-icon">{securityMetrics.criticalAlerts}</div>
         </div>
-        <div className="metric-card high">
+        <div className="metric-card high" style={{ position: 'relative', overflow: 'hidden' }}>
+          <span className="metric-icon" style={{ color: '#FF9800' }}><FaFireAlt /></span>
           <h3>High Severity</h3>
-          <div className="metric-value">{securityMetrics.highAlerts}</div>
+          <div className="metric-value-with-icon">{securityMetrics.highAlerts}</div>
         </div>
-        <div className="metric-card">
+        <div className="metric-card" style={{ position: 'relative', overflow: 'hidden' }}>
+          <span className="metric-icon" style={{ color: '#4BC0C0' }}><FaGlobe /></span>
           <h3>Unique Threat IPs</h3>
-          <div className="metric-value">{securityMetrics.uniqueIPs}</div>
+          <div className="metric-value-with-icon">{securityMetrics.uniqueIPs}</div>
         </div>
-        <div className="metric-card">
+        <div className="metric-card" style={{ position: 'relative', overflow: 'hidden' }}>
+          <span className="metric-icon" style={{ color: '#9966FF' }}><FaFlag /></span>
           <h3>Countries Affected</h3>
-          <div className="metric-value">{securityMetrics.uniqueCountries}</div>
+          <div className="metric-value-with-icon">{securityMetrics.uniqueCountries}</div>
         </div>
-        <div className="metric-card">
+        <div className="metric-card" style={{ position: 'relative', overflow: 'hidden' }}>
+          <span className="metric-icon" style={{ color: '#FFCE56' }}><FaChartLine /></span>
           <h3>Avg Severity</h3>
-          <div className="metric-value">{securityMetrics.avgSeverity}</div>
+          <div className="metric-value-with-icon">{securityMetrics.avgSeverity}</div>
         </div>
       </div>
 

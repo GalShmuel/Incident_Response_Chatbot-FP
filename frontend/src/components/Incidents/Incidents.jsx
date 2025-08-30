@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FaPlus, FaSearch, FaFilter, FaClock, FaCheckCircle, FaExclamationTriangle, FaUser, FaCalendar } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaFilter, FaClock, FaCheckCircle, FaExclamationTriangle, FaUser, FaCalendar, FaBug, FaFireAlt, FaFlag, FaCheck, FaExclamationCircle } from 'react-icons/fa';
 import './Incidents.css';
+import Select from 'react-select';
 
 const Incidents = () => {
   const [findings, setFindings] = useState([]);
@@ -165,28 +166,34 @@ const Incidents = () => {
       {/* Incident Statistics */}
       <div className="incident-stats">
         <div className="stat-card">
+          <span className="stat-icon stat-icon-bg" style={{ background: '#e3f7fa', color: '#36A2EB' }}><FaBug /></span>
           <h3>Total Incidents</h3>
-          <div className="stat-value">{incidentStats.total}</div>
+          <div className="stat-value" style={{ color: '#36A2EB' }}>{incidentStats.total}</div>
         </div>
         <div className="stat-card open">
+          <span className="stat-icon stat-icon-bg" style={{ background: '#fff4e3', color: '#FF9800' }}><FaClock /></span>
           <h3>Open</h3>
-          <div className="stat-value">{incidentStats.open}</div>
+          <div className="stat-value" style={{ color: '#FF9800' }}>{incidentStats.open}</div>
         </div>
         <div className="stat-card investigating">
+          <span className="stat-icon stat-icon-bg" style={{ background: '#fffbe3', color: '#FFC107' }}><FaExclamationTriangle /></span>
           <h3>Investigating</h3>
-          <div className="stat-value">{incidentStats.investigating}</div>
+          <div className="stat-value" style={{ color: '#FFC107' }}>{incidentStats.investigating}</div>
         </div>
         <div className="stat-card resolved">
+          <span className="stat-icon stat-icon-bg" style={{ background: '#e3fae7', color: '#4CAF50' }}><FaCheckCircle /></span>
           <h3>Resolved</h3>
-          <div className="stat-value">{incidentStats.resolved}</div>
+          <div className="stat-value" style={{ color: '#4CAF50' }}>{incidentStats.resolved}</div>
         </div>
         <div className="stat-card critical">
+          <span className="stat-icon stat-icon-bg" style={{ background: '#ffe3e3', color: '#F44336' }}><FaFireAlt /></span>
           <h3>Critical</h3>
-          <div className="stat-value">{incidentStats.critical}</div>
+          <div className="stat-value" style={{ color: '#F44336' }}>{incidentStats.critical}</div>
         </div>
         <div className="stat-card high">
+          <span className="stat-icon stat-icon-bg" style={{ background: '#f3e3ff', color: '#9966FF' }}><FaFlag /></span>
           <h3>High Priority</h3>
-          <div className="stat-value">{incidentStats.high}</div>
+          <div className="stat-value" style={{ color: '#9966FF' }}>{incidentStats.high}</div>
         </div>
       </div>
 
@@ -203,27 +210,33 @@ const Incidents = () => {
           />
         </div>
         <div className="filter-controls">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Status</option>
-            <option value="open">Open</option>
-            <option value="investigating">Investigating</option>
-            <option value="resolved">Resolved</option>
-          </select>
-          <select
-            value={severityFilter}
-            onChange={(e) => setSeverityFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Priority</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
+          <Select
+            classNamePrefix="custom-select"
+            value={{ value: statusFilter, label: statusFilter === 'all' ? 'All Status' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) }}
+            onChange={option => setStatusFilter(option.value)}
+            options={[
+              { value: 'all', label: 'All Status' },
+              { value: 'open', label: 'Open' },
+              { value: 'investigating', label: 'Investigating' },
+              { value: 'resolved', label: 'Resolved' }
+            ]}
+            styles={{ container: base => ({ ...base, minWidth: 160, marginRight: 8 }) }}
+            isSearchable={false}
+          />
+          <Select
+            classNamePrefix="custom-select"
+            value={{ value: severityFilter, label: severityFilter === 'all' ? 'All Priority' : severityFilter.charAt(0).toUpperCase() + severityFilter.slice(1) }}
+            onChange={option => setSeverityFilter(option.value)}
+            options={[
+              { value: 'all', label: 'All Priority' },
+              { value: 'critical', label: 'Critical' },
+              { value: 'high', label: 'High' },
+              { value: 'medium', label: 'Medium' },
+              { value: 'low', label: 'Low' }
+            ]}
+            styles={{ container: base => ({ ...base, minWidth: 160 }) }}
+            isSearchable={false}
+          />
         </div>
       </div>
 
@@ -231,12 +244,14 @@ const Incidents = () => {
       <div className="incidents-list">
         {filteredIncidents.map((incident) => (
           <div key={incident.id} className="incident-card" onClick={() => setSelectedIncident(incident)}>
-            <div className="incident-header">
-              <div className="incident-status">
-                {getStatusIcon(incident.status)}
-                <span className="status-text">{incident.status}</span>
+            <div className="incident-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid #f0f0f0', paddingBottom: 10, marginBottom: 18 }}>
+              <div className="incident-status" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: '2.1rem', display: 'flex', alignItems: 'center', color: incident.status === 'open' ? '#FF9800' : incident.status === 'investigating' ? '#FFC107' : incident.status === 'resolved' ? '#4CAF50' : '#36A2EB' }}>
+                  {getStatusIcon(incident.status)}
+                </span>
+                <span className="status-text" style={{ marginLeft: 10, fontSize: '1.1rem', fontWeight: 600, textTransform: 'capitalize', letterSpacing: 0.2 }}>{incident.status}</span>
               </div>
-              <div className="incident-priority" style={{ backgroundColor: getPriorityColor(incident.priority) }}>
+              <div className="incident-priority" style={{ backgroundColor: getPriorityColor(incident.priority), marginLeft: 'auto', minWidth: 90, textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 {incident.priority}
               </div>
             </div>

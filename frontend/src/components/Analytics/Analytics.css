@@ -33,6 +33,21 @@
   color: var(--text-color);
 }
 
+.analytics-subtitle {
+  font-size: 1.25rem;
+  color: #6b7280;
+  text-align: center;
+  margin: 0.5rem auto 0 auto;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  max-width: 520px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  box-shadow: none;
+}
+
 /* Metrics Grid */
 .metrics-grid {
   display: grid;
@@ -78,6 +93,31 @@
 
 .metric-card.high .metric-value {
   color: #FF9800;
+}
+
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  opacity: 0.85;
+  margin-bottom: 0.2rem;
+}
+
+.metric-value-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.metric-icon-inline {
+  display: flex;
+  align-items: center;
+  font-size: 1.2em;
+  opacity: 0.85;
 }
 
 /* Charts Grid */

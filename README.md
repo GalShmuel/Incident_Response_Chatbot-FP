@@ -12,9 +12,9 @@ This project is a chatbot system designed to assist with cybersecurity incident 
 
 - Python, Flask
 - React.js
-- Openrouter 
+- Open Ai 
 - AWS GuardDuty
-- AutoGen Agents
+
 
  ## 🚀 Getting Started
 

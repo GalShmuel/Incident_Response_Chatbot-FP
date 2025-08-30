@@ -10,7 +10,7 @@
     padding: 10px 15px;
     border: 1px solid var(--input-border);
     border-radius: 20px;
-    font-size: 0.95rem;
+    font-size: 1.2rem;
     outline: none;
     transition: border-color 0.2s ease;
     background: var(--input-bg);
@@ -74,7 +74,7 @@ textarea.chat-input {
     border-radius: 24px !important;
     background-color: var(--input-bg) !important;
     color: var(--text-color) !important;
-    font-size: 0.95rem !important;
+    font-size: 1.2rem !important;
     line-height: 1.5 !important;
     resize: none !important;
     outline: none !important;

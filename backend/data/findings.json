@@ -9726,7 +9726,7 @@
         "Type": "default"
       }
     },
-    "Severity": 8,
+    "Severity": 1,
     "Title": "The EC2 instance i-080ffbb3199626e36 queried a Bitcoin-related domain name.",
     "Type": "CryptoCurrency:EC2/BitcoinTool.B!DNS",
     "UpdatedAt": "2024-01-15T11:49:36.676Z"

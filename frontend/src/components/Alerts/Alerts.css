@@ -170,3 +170,47 @@
     margin: 16px 24px;
   }
 }
+
+/* Filter Label Styles */
+.filter-label-container {
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 1600px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  color: black;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.filter-icon {
+  font-size: 1.1rem;
+}
+
+.filter-text {
+  flex: 1;
+}
+
+.clear-filter-btn {
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.5);
+}

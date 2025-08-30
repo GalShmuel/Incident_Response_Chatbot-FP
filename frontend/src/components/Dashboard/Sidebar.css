@@ -1,0 +1,88 @@
+.sidebar {
+  width: 220px;
+  background: var(--sidebar-bg);
+  color: #fff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+.sidebar-header {
+  font-size: 1.4rem;
+  font-weight: bold;
+  padding: 24px 0 16px 0;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-bottom: 1px solid #333;
+}
+.dashboard-icon {
+  font-size: 32px;
+  color: #66c0c5;
+  margin-right: 0;
+}
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+}
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-left: 4px solid transparent;
+}
+.sidebar-nav-item:hover {
+  background: #2d323c;
+  color: #66c0c5;
+}
+.sidebar-nav-item.active {
+  background: #181b20;
+  color: #66c0c5;
+  border-left: 4px solid #66c0c5;
+}
+.sidebar-icon {
+  margin-right: 16px;
+  font-size: 1.3em;
+}
+.sidebar-label {
+  flex: 1;
+}
+.sidebar-tabs-area {
+  padding: 24px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.sidebar-tabs-area .tab-button {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  text-align: left;
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-left: 4px solid transparent;
+  border-radius: 0;
+}
+.sidebar-tabs-area .tab-button:hover {
+  background: #2d323c;
+  color: #66c0c5;
+}
+.sidebar-tabs-area .tab-button.active {
+  background: #181b20;
+  color: #66c0c5;
+  border-left: 4px solid #66c0c5;
+} 

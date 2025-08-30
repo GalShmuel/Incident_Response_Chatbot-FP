@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const AWS = require('aws-sdk');
+AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' }); // Set your region
+const guardduty = new AWS.GuardDuty();
 
 const app = express();
 app.use(cors());
@@ -48,7 +51,10 @@ app.post('/api/chat/process', async (req, res) => {
         const messages = [
             {
                 role: 'system',
-                content: 'You are a security assistant. Provide a brief analysis of this security alert in 2-3 sentences. Focus on: 1) Severity and impact 2) Immediate action needed 3) Key concern.'
+                content: `You are a TIER1 SOC Analyst specialized in analyzing AWS GuardDuty findings. 
+                write as the title the request you are asked to do.
+                Always maintain a professional and clear communication style.
+                `
             },
             {
                 role: 'user',
@@ -163,96 +169,22 @@ const handleIncidentPlaybook = () => {
     return {
         type: 'playbook',
         content: `# Incident Response Playbook for Alert ${alertData?.displayData?.id || alertData?.Id || 'No specific alert'}
+                    ## Alert Information
+                    - **Alert ID**: ${alertData?.displayData?.id || alertData?.Id || 'N/A'}
+                    - **Alert Source**: ${alertData?.displayData?.source || 'AWS GuardDuty'}
+                    - **Severity Level**: ${alertData?.Severity || 'N/A'}
+                    - **Detection Time**: ${alertData?.CreatedAt || 'N/A'}
+                    When you receive logs or security-related information:
+                    1. Analyze the logs for potential security findings
+                    2. Follow standard incident response playbooks
+                    3. Provide step-by-step guidance based on the logs
+                    4. Include relevant security best practices
+                    5. Suggest appropriate tools and commands
+                    6. Explain the reasoning behind each step
+                    7. Highlight critical findings and potential risks
+                    8. Provide remediation steps when applicable
 
-## Alert Information
-- **Alert ID**: ${alertData?.displayData?.id || alertData?.Id || 'N/A'}
-- **Alert Source**: ${alertData?.displayData?.source || 'AWS GuardDuty'}
-- **Severity Level**: ${alertData?.Severity || 'N/A'}
-- **Detection Time**: ${alertData?.CreatedAt || 'N/A'}
-
-## Response Time Targets (SLAs)
-- 🚨 **Containment**: Within 15 minutes
-- 🔍 **Investigation**: Within 1 hour
-- ✅ **Full Resolution**: Within 24 hours
-
-## 1. Initial Assessment & Containment
-1. Verify alert details and source
-2. Assess potential impact and scope
-3. Implement immediate containment measures
-4. Document all actions taken
-
-## 2. Detailed Investigation
-### Log Analysis Instructions
-1. **CloudTrail Analysis**
-   - Search for suspicious API calls
-   - Focus on the time window: 1 hour before/after detection
-   - Look for unusual patterns or unauthorized access
-
-2. **VPC Flow Logs**
-   - Check for unusual egress traffic
-   - Identify affected subnets and resources
-   - Document all suspicious IP addresses
-
-3. **GuardDuty Findings**
-   - Review related findings
-   - Check for similar patterns
-   - Document threat intelligence
-
-## 3. Notification & Escalation
-1. **Immediate Notifications**
-   - Alert SOC team lead
-   - Notify cloud security team
-   - Create high-priority incident ticket
-
-2. **Escalation Path**
-   - If sensitive data involved: Escalate to data owners
-   - If critical systems affected: Notify system owners
-   - If legal implications: Contact legal team
-
-## 4. Remediation Steps
-### Safety Checks
-⚠️ **IMPORTANT**: Before making any changes:
-- Backup current configurations
-- Document existing settings
-- Test changes in non-production if possible
-
-### Action Items
-1. Isolate affected resources
-2. Remove unauthorized access
-3. Update security controls
-4. Verify remediation effectiveness
-
-## 5. Documentation & Lessons Learned
-### Required Documentation
-- Incident timeline
-- Actions taken
-- Resources affected
-- Remediation steps
-
-### Lessons Learned Questions
-1. Was detection timely and accurate?
-2. Were access controls appropriate?
-3. Can we automate parts of this response?
-4. Does the threat feed need tuning?
-5. Are our SLAs appropriate?
-
-## 6. Prevention & Improvement
-1. Review and update security controls
-2. Update detection rules if needed
-3. Document new preventive measures
-4. Schedule follow-up review
-
-## Template Variables
-- Alert ID: <ALERT_ID>
-- Source IP: <IP_ADDRESS>
-- Affected Resources: <RESOURCE_NAMES>
-- IAM Role/User: <IAM_ENTITY>
-- Detection Time: <DETECTION_TIME>
-
-IMPORTANT:
-If you need more information about an alert to provide a complete analysis, ask specific, targeted questions to gather the necessary context.
-
-After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`
+                    After presenting the playbook, ask the user in a new message: "Do you have any additional questions about the incident response playbook? (Yes/No)"`
     };
 };
 
@@ -568,166 +500,123 @@ app.delete('/api/chats/:chatId', async (req, res) => {
     }
 });
 
-// Add at the top of the file, after the requires
+// Add in-memory cache for findings
 let findingsCache = {
     data: null,
-    lastModified: null
+    lastFetched: 0
 };
+const FINDINGS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-// Add file watcher setup
-const findingsPath = path.join(__dirname, './data/findings.json');
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, './data');
-if (!fs.existsSync(dataDir)) {
-    console.log('📁 Creating data directory...');
-    fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Ensure findings file exists
-if (!fs.existsSync(findingsPath)) {
-    console.log('📄 Creating initial findings file...');
-    fs.writeFileSync(findingsPath, JSON.stringify([], null, 2));
-}
-
-// Function to read findings from file with error handling
-const readFindings = () => {
-    try {
-        if (!fs.existsSync(findingsPath)) {
-            console.error('❌ Findings file not found');
-            return [];
-        }
-
-        const stats = fs.statSync(findingsPath);
-        const currentModified = stats.mtime.getTime();
-        
-        // Only read if file has changed
-        if (!findingsCache.data || !findingsCache.lastModified || currentModified > findingsCache.lastModified) {
-            console.log('📚 Reading findings from file - file has changed');
-            const fileContent = fs.readFileSync(findingsPath, 'utf8');
-            findingsCache.data = JSON.parse(fileContent);
-            findingsCache.lastModified = currentModified;
-        } else {
-            console.log('📚 Using cached findings - file unchanged');
-        }
-        return findingsCache.data;
-    } catch (error) {
-        console.error('❌ Error reading findings:', error);
-        return [];
-    }
-};
-
-// Modify the findings endpoint to support polling
-app.get('/api/findings', (req, res) => {
+app.get('/api/findings', async (req, res) => {
     console.log('\n📥 ===== FINDINGS REQUEST =====');
     console.log('📅 Time:', new Date().toISOString());
     console.log('🔍 Request Type: GET all findings');
-    console.log('🔍 Query Parameters:', req.query);
-    
     try {
-        const allFindings = readFindings();
-        
-        // Ensure allFindings is an array
-        if (!Array.isArray(allFindings)) {
-            throw new Error('Findings data is not in the expected format');
+        // Check cache
+        const now = Date.now();
+        if (findingsCache.data && (now - findingsCache.lastFetched < FINDINGS_CACHE_TTL)) {
+            console.log('✅ Returning findings from cache');
+            return res.json({
+                findings: findingsCache.data,
+                total: findingsCache.data.length,
+                cached: true
+            });
         }
 
-        // Calculate severity distribution for all findings
-        const severityDistribution = allFindings.reduce((acc, f) => {
-            acc[f.Severity] = (acc[f.Severity] || 0) + 1;
-            return acc;
-        }, {});
-
-        // Calculate open and resolved counts
-        const openCount = allFindings.filter(f => !f.Service?.Archived).length;
-        const resolvedCount = allFindings.filter(f => f.Service?.Archived).length;
-
-        console.log('📊 Initial Distribution:');
-        console.log('- Total findings:', allFindings.length);
-        console.log('- Open findings:', openCount);
-        console.log('- Resolved findings:', resolvedCount);
-        console.log('- Severity distribution:', severityDistribution);
-        
-        // Filter by status (open/resolved)
-        let filteredFindings = allFindings;
-        if (req.query.status) {
-            const isOpen = req.query.status === 'open';
-            filteredFindings = allFindings.filter(finding => 
-                isOpen ? !finding.Service?.Archived : finding.Service?.Archived
-            );
-            console.log(`🔍 Filtered by status: ${req.query.status}`);
-            console.log(`- After status filter: ${filteredFindings.length} findings`);
-        }
-        
-        // Apply severity filter if provided
-        if (req.query.severity) {
-            const severities = req.query.severity.split(',').map(s => parseInt(s));
-            filteredFindings = filteredFindings.filter(finding => severities.includes(finding.Severity));
-            console.log(`🔍 Filtered by severities: ${severities.join(', ')}`);
-            console.log(`- After severity filter: ${filteredFindings.length} findings`);
+        // 1. Read local findings.json
+        let localFindings = [];
+        const findingsPath = path.join(__dirname, './data/findings.json');
+        if (fs.existsSync(findingsPath)) {
+            try {
+                const fileContent = fs.readFileSync(findingsPath, 'utf8');
+                localFindings = JSON.parse(fileContent);
+            } catch (err) {
+                console.error('Error reading/parsing findings.json:', err);
+            }
         }
 
-        // Get the last modified time of the file
-        const stats = fs.statSync(findingsPath);
-        const lastModified = stats.mtime.getTime();
-        
-        // Return the response with lastModified timestamp
+        // Use detector ID from environment variable if set, otherwise fetch programmatically
+        let detectorId = process.env.GUARDDUTY_DETECTOR_ID;
+        if (!detectorId) {
+            const detectors = await guardduty.listDetectors().promise();
+            if (!detectors.DetectorIds || detectors.DetectorIds.length === 0) {
+                return res.status(404).json({ message: 'No GuardDuty detectors found' });
+            }
+            detectorId = detectors.DetectorIds[0];
+        }
+
+        // Paginate through all findings
+        let allFindingIds = [];
+        let nextToken = undefined;
+        do {
+            const params = {
+                DetectorId: detectorId,
+                MaxResults: 50,
+                NextToken: nextToken
+            };
+            const findingsList = await guardduty.listFindings(params).promise();
+            allFindingIds = allFindingIds.concat(findingsList.FindingIds);
+            nextToken = findingsList.NextToken;
+        } while (nextToken);
+
+        // Fetch all findings in batches of 50
+        let allFindings = [];
+        for (let i = 0; i < allFindingIds.length; i += 50) {
+            const batchIds = allFindingIds.slice(i, i + 50);
+            const findings = await guardduty.getFindings({
+                DetectorId: detectorId,
+                FindingIds: batchIds
+            }).promise();
+            allFindings = allFindings.concat(findings.Findings);
+        }
+
+        // 3. Merge AWS and local findings
+        const combinedFindings = [...allFindings, ...localFindings];
+
+        // Update cache
+        findingsCache.data = combinedFindings;
+        findingsCache.lastFetched = Date.now();
+
         res.json({
-            findings: filteredFindings,
-            totalFindings: allFindings,
-            stats: {
-                total: allFindings.length,
-                open: openCount,
-                resolved: resolvedCount,
-                severityDistribution: severityDistribution
-            },
-            lastModified: lastModified
+            findings: combinedFindings,
+            total: combinedFindings.length,
+            cached: false
         });
     } catch (error) {
-        console.error('❌ Error reading findings:', error);
-        console.error('Stack trace:', error.stack);
-        res.status(500).json({ 
-            message: error.message,
-            findings: [],
-            totalFindings: [],
-            stats: {
-                total: 0,
-                open: 0,
-                resolved: 0,
-                severityDistribution: {}
-            },
-            lastModified: null
-        });
+        console.error('❌ Error fetching GuardDuty findings:', error);
+        res.status(500).json({ message: error.message });
     }
     console.log('📥 ===== END FINDINGS REQUEST =====\n');
 });
 
 // Get a specific finding by ID
-app.get('/api/findings/:id', (req, res) => {
+app.get('/api/findings/:id', async (req, res) => {
     console.log('\n📥 ===== SINGLE FINDING REQUEST =====');
     console.log('📅 Time:', new Date().toISOString());
     console.log('🔍 Request Type: GET single finding');
     console.log('🆔 Finding ID:', req.params.id);
     try {
-        const findingsPath = path.join(__dirname, './data/findings.json');
-        const findings = JSON.parse(fs.readFileSync(findingsPath, 'utf8'));
-        const finding = findings.find(f => f.Id === req.params.id);
-        
-        if (!finding) {
-            console.log('❌ Error: Finding not found');
+        let detectorId = process.env.GUARDDUTY_DETECTOR_ID;
+        if (!detectorId) {
+        const detectors = await guardduty.listDetectors().promise();
+        if (!detectors.DetectorIds || detectors.DetectorIds.length === 0) {
+            return res.status(404).json({ message: 'No GuardDuty detectors found' });
+        }
+            detectorId = detectors.DetectorIds[0];
+        }
+
+        const findingData = await guardduty.getFindings({
+            DetectorId: detectorId,
+            FindingIds: [req.params.id]
+        }).promise();
+
+        if (!findingData.Findings || findingData.Findings.length === 0) {
             return res.status(404).json({ message: 'Finding not found' });
         }
-        
-        console.log('✅ Success: Found the requested finding');
-        console.log('📊 Finding Details:');
-        console.log('- Title:', finding.Title);
-        console.log('- Severity:', finding.Severity);
-        console.log('- Status:', finding.Service.status ? 'open' : 'closed');
-        console.log('📤 Sending response...');
-        res.json(finding);
+
+        res.json(findingData.Findings[0]);
     } catch (error) {
-        console.error('❌ Error reading finding:', error);
-        console.error('Stack trace:', error.stack);
+        console.error('❌ Error fetching GuardDuty finding:', error);
         res.status(500).json({ message: error.message });
     }
     console.log('📥 ===== END SINGLE FINDING REQUEST =====\n');
@@ -842,8 +731,8 @@ app.put('/api/findings/:id', (req, res) => {
         }
         
         // Invalidate the cache
-        findingsCache.data = null;
-        findingsCache.lastModified = null;
+        // findingsCache.data = null; // This line is removed
+        // findingsCache.lastModified = null; // This line is removed
         
         console.log('✅ Success: Updated the finding');
         console.log('📤 Sending response...');
@@ -883,8 +772,8 @@ app.put('/api/findings', (req, res) => {
         fs.writeFileSync(findingsPath, JSON.stringify(updatedFindings, null, 4));
         
         // Invalidate the cache
-        findingsCache.data = null;
-        findingsCache.lastModified = null;
+        // findingsCache.data = null; // This line is removed
+        // findingsCache.lastModified = null; // This line is removed
         
         console.log('✅ Success: Updated all findings');
         console.log('📤 Sending response...');

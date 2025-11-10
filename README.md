@@ -1,4 +1,4 @@
-# Incident Response Chatbot (Final Project)- not finished.
+# Incident Response Chatbot (Final Project)
 
 This project is a chatbot system designed to assist with cybersecurity incident response using AI.
 

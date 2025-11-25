@@ -66,3 +66,14 @@ Copy code
 cd frontend  
 npm start
 After this, open your browser at http://localhost:3000 (or whatever port your frontend runs on) and you should see the chatbot interface.
+
+
+
+
+Images:
+<img width="1737" height="1264" alt="Screenshot 2025-11-16 105619" src="https://github.com/user-attachments/assets/f21fffe5-54ef-4b17-b44b-c008eacf2890" />
+<img width="1763" height="1269" alt="Screenshot 2025-11-16 110111" src="https://github.com/user-attachments/assets/f23216e8-6b9b-4237-bfe2-af93ab2e3050" />
+<img width="1729" height="1269" alt="Screenshot 2025-11-16 105602" src="https://github.com/user-attachments/assets/1395a191-2042-497d-b4b8-04c4c8efc1f2" />
+<img width="2086" height="1270" alt="Screenshot 2025-11-16 105526" src="https://github.com/user-attachments/assets/eaf22969-a71a-4d83-9738-9bda6509102e" />
+<img width="461" height="500" alt="Screenshot 2025-07-23 024935" src="https://github.com/user-attachments/assets/20237270-37b7-4f21-8dd4-36340693875b" />
+<img width="686" height="857" alt="Screenshot 2025-06-09 171632" src="https://github.com/user-attachments/assets/4ef1cc39-2b5f-4b51-a904-70f301736076" />
